@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>아이젠트리 충남도청점 V15.5</title>
+    <title>아이젠트리 충남도청점 V15.6</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
@@ -35,7 +35,6 @@
         .p-sale { color: #d63031; font-weight: 800; font-size: 1.05em; line-height: 1; }
         .disabled-row { opacity: 0.15; filter: grayscale(1); pointer-events: none; }
         .admin-panel { display: none; background: #f1f3f5; padding: 25px; border-bottom: 2px solid #ddd; max-height: 85vh; overflow-y: auto; }
-        .admin-panel.active { display: block; }
         .admin-section { background: white; padding: 15px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #dee2e6; }
         .tag-row { display: flex; align-items: center; gap: 10px; background: #f8f9fa; padding: 8px; border-radius: 5px; margin-bottom: 5px; border: 1px solid #eee; }
         .btn-ui { padding: 6px 12px; border: none; border-radius: 5px; cursor: pointer; color: white; font-weight: bold; font-size: 0.85em; }
@@ -48,7 +47,7 @@
 
 <div class="app-container">
     <header>
-        <div class="logo-area"><h2>아이젠트리 충남도청점</h2><span style="font-size:0.8em; opacity:0.7; margin-left:10px;">V15.5 수동저장</span></div>
+        <div class="logo-area"><h2>아이젠트리 충남도청점</h2><span style="font-size:0.8em; opacity:0.7; margin-left:10px;">V15.6 Master</span></div>
         <div class="top-controls">
             <div class="control-group"><label>대상:</label><select id="ageSel" onchange="renderApp()"><option value="student">학생</option><option value="adult" selected>성인</option><option value="senior">시니어</option></select></div>
             <div class="control-group"><label>불편함:</label><select id="issueSel" onchange="renderApp()"></select></div>
@@ -74,7 +73,7 @@
             <button class="btn-ui" style="background:#27ae60;" onclick="openExcelModal()">📊 엑셀 일괄 업로드</button>
             <div style="display:flex; gap:10px;">
                 <button class="btn-ui" style="background:#9b59b6;" onclick="exportData()">📤 파일백업</button>
-                <button class="btn-ui" style="background:var(--success); box-shadow: 0 0 15px rgba(39, 174, 96, 0.4);" onclick="saveData()">💾 서버에 최종저장 (전 기기 반영)</button>
+                <button class="btn-ui" style="background:var(--success); border: 2px solid #fff;" onclick="saveData()">💾 서버에 최종저장 (전 기기 반영)</button>
                 <button class="btn-ui" style="background:#666;" onclick="toggleAdmin()">❌ 닫기</button>
             </div>
         </div>
@@ -95,7 +94,7 @@
             </div>
         </div>
         <div class="admin-section">
-            <h4>📦 전체 브랜드 및 렌즈 상세 설정</h4>
+            <h4>📦 브랜드 및 제품 설정</h4>
             <div id="admin-brands-list"></div>
             <button class="btn-ui" style="background:var(--accent); margin-top:15px;" onclick="addNewBrand()">+ 새 브랜드 추가</button>
         </div>
@@ -125,18 +124,17 @@
     let currentTabId = 'ai';
     let adminSelectedTabId = 't1';
     let openBrandIndex = null;
-    let isEditing = false; // 편집 중인지 체크
 
-    // 서버에서 한 번만 읽어오기
     function loadDataFromServer() {
-        db.ref('lensData').once('value').then((snapshot) => {
+        db.ref('lensData').on('value', (snapshot) => {
             const data = snapshot.val();
             if (data) {
                 if(data.categories) categories = data.categories;
                 if(data.brands) brands = data.brands;
                 if(data.issues) issues = data.issues;
                 renderApp();
-            }
+                if(document.getElementById('admin-panel').style.display === 'block') renderAdmin();
+            } else { renderApp(); }
         });
     }
 
@@ -191,9 +189,10 @@
         let bHtml = '';
         brands.forEach((b, bi) => {
             const active = openBrandIndex === bi;
-            bHtml += `<div style="border:1px solid #ddd; border-radius:8px; margin-bottom:10px;"><div style="cursor:pointer; background:#e9ecef; padding:10px; display:flex; justify-content:space-between;" onclick="openBrandIndex=${active?null:bi}; renderAdmin();"><span><b>${b.name}</b></span><div><button class="btn-small" onclick="event.stopPropagation(); moveItem(brands, bi, -1); renderAdmin();">▲</button><button class="btn-small" onclick="event.stopPropagation(); moveItem(brands, bi, 1); renderAdmin();">▼</button></div></div><div style="padding:15px; display:${active?'block':'none'}">브랜드명: <input type="text" value="${b.name}" onchange="brands[${bi}].name=this.value; renderApp();"> <button class="btn-ui" style="background:var(--danger); float:right;" onclick="if(confirm('삭제?')){brands.splice(${bi},1); renderAdmin();}">브랜드 삭제</button>${b.lenses.map((l, li) => `
+            // 브랜드 옆에 제품 숫자 표시 살리기
+            bHtml += `<div style="border:1px solid #ddd; border-radius:8px; margin-bottom:10px;"><div style="cursor:pointer; background:#e9ecef; padding:10px; display:flex; justify-content:space-between;" onclick="openBrandIndex=${active?null:bi}; renderAdmin();"><span><b>${b.name}</b> (${b.lenses.length})</span><div><button class="btn-small" onclick="event.stopPropagation(); moveItem(brands, ${bi}, -1); renderAdmin();">▲</button><button class="btn-small" onclick="event.stopPropagation(); moveItem(brands, ${bi}, 1); renderAdmin();">▼</button></div></div><div style="padding:15px; display:${active?'block':'none'}">브랜드명: <input type="text" value="${b.name}" onchange="brands[${bi}].name=this.value; renderApp();"> <button class="btn-ui" style="background:var(--danger); float:right;" onclick="if(confirm('삭제?')){brands.splice(${bi},1); renderAdmin();}">브랜드 삭제</button>${b.lenses.map((l, li) => `
                 <div class="admin-lens-item" style="border:1px solid #eee; padding:10px; margin-top:10px; border-radius:8px; background:#fdfdfd;">
-                    <div style="display:flex; gap:10px; margin-bottom:10px; align-items:center;">🛡️ <b>제품:</b> <input type="text" value="${l.name}" onchange="brands[${bi}].lenses[${li}].name=this.value; renderApp();" style="flex:1"> <label><input type="checkbox" ${l.isSale ? 'checked' : ''} onchange="brands[${bi}].lenses[${li}].isSale=this.checked; renderApp();"> 🔥 행사</label> <select onchange="brands[${bi}].lenses[${li}].tabId=this.value; renderAdmin(); renderApp();">${categories.filter(c=>c.id!=='ai').map(c=>`<option value="${c.id}" ${l.tabId===c.id?'selected':''}>${c.name}</option>`).join('')}</select><button onclick="brands[${bi}].lenses.splice(${li},1); renderAdmin();">×</button></div>
+                    <div style="display:flex; gap:10px; margin-bottom:10px; align-items:center;">🛡️ <b>제품명:</b> <input type="text" value="${l.name}" onchange="brands[${bi}].lenses[${li}].name=this.value; renderApp();" style="flex:1"> <label><input type="checkbox" ${l.isSale ? 'checked' : ''} onchange="brands[${bi}].lenses[${li}].isSale=this.checked; renderApp();"> 🔥 행사</label> <select onchange="brands[${bi}].lenses[${li}].tabId=this.value; renderAdmin(); renderApp();">${categories.filter(c=>c.id!=='ai').map(c=>`<option value="${c.id}" ${l.tabId===c.id?'selected':''}>${c.name}</option>`).join('')}</select><button onclick="brands[${bi}].lenses.splice(${li},1); renderAdmin();">×</button></div>
                     <b>💡 한줄설명:</b> <input type="text" value="${l.desc||''}" style="width:90%; margin-bottom:10px;" onchange="brands[${bi}].lenses[${li}].desc=this.value; renderApp();"><br>
                     대상: ${['student','adult','senior'].map(a=>`<label><input type="checkbox" ${l.targetAges && l.targetAges.includes(a)?'checked':''} onchange="toggleF(${bi},${li},'age','${a}')">${a}</label>`).join(' ')} | 증상: ${issues.map(is=>`<label><input type="checkbox" ${l.targetIssues && l.targetIssues.includes(is.id)?'checked':''} onchange="toggleF(${bi},${li},'issue','${is.id}')">${is.name}</label>`).join(' ')}
                     ${l.items.map((it, ii) => `<div style="display:grid; grid-template-columns: 60px 1fr 80px 80px 180px 30px; gap:5px; margin-top:5px;">
@@ -244,6 +243,7 @@
     function processExcel() {
         const input = document.getElementById('excel-input').value.trim();
         if(!input) { alert("데이터가 없습니다."); return; }
+        if(!confirm("기존 데이터를 모두 지우고 엑셀 내용으로 적용하시겠습니까?")) return;
         const newBrands = [];
         input.split('\n').forEach(line => {
             const cols = line.includes('\t') ? line.split('\t') : line.split(',');
@@ -255,21 +255,25 @@
         });
         if(newBrands.length > 0) { 
             brands = newBrands; 
-            renderAdmin(); 
-            renderApp(); 
-            closeExcelModal(); 
+            renderAdmin(); renderApp(); closeExcelModal(); 
             alert("브라우저에 즉시 적용되었습니다! 마지막에 [서버에 최종저장]을 꼭 눌러주세요.");
         }
     }
 
-    function saveData() { 
+    // 서버 저장 함수 보강
+    async function saveData() { 
         if(!confirm("현재 데이터를 서버에 저장하여 모든 기기에 반영하시겠습니까?")) return;
-        const dataToSave = { categories, brands, issues };
-        db.ref('lensData').set(dataToSave)
-            .then(() => alert('서버 저장 성공! 이제 다른 기기에서도 이 데이터를 볼 수 있습니다.'))
-            .catch((err) => alert('실패: ' + err));
+        try {
+            const dataToSave = { categories, brands, issues };
+            await db.ref('lensData').set(dataToSave);
+            alert('✅ 서버 저장 완료! 이제 다른 기기에서도 최신 가격표가 보입니다.');
+        } catch (err) {
+            console.error(err);
+            alert('❌ 저장 실패! (파이어베이스 규칙을 확인해주세요): ' + err.message);
+        }
     }
-    function exportData() { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify({categories, brands, issues}, null, 2)], { type: 'application/json' })); a.download = `아이젠트리_백업.json`; a.click(); }
+    
+    function exportData() { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify({categories, brands, issues}, null, 2)], { type: 'application/json' })); a.download = `백업.json`; a.click(); }
     init();
 </script>
 </body>
