@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>아이젠트리 충남도청점 V15.9</title>
+    <title>아이젠트리 충남도청점 V16.1</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
@@ -47,12 +47,12 @@
 
 <div class="app-container">
     <header>
-        <div class="logo-area"><h2>아이젠트리 충남도청점</h2><span style="font-size:0.8em; opacity:0.7; margin-left:10px;">V15.9 REPAIR</span></div>
+        <div class="logo-area"><h2>아이젠트리 충남도청점</h2><span style="font-size:0.8em; opacity:0.7; margin-left:10px;">V16.1 MASTER</span></div>
         <div class="top-controls">
             <div class="control-group"><label>대상:</label><select id="ageSel" onchange="renderApp()"><option value="adult" selected>성인</option><option value="student">학생</option><option value="senior">시니어</option></select></div>
             <div class="control-group"><label>불편함:</label><select id="issueSel" onchange="renderApp()"></select></div>
             <div class="control-group">R <select id="rs" onchange="renderApp()"></select><select id="rc" onchange="renderApp()"></select> L <select id="ls" onchange="renderApp()"></select><select id="lc" onchange="renderApp()"></select></div>
-            <button id="adminToggleBtn" class="btn-ui" style="background:var(--accent);" onclick="toggleAdmin()">⚙️ 관리자</button>
+            <button class="btn-ui" style="background:var(--accent);" onclick="toggleAdmin()">⚙️ 관리자</button>
         </div>
     </header>
 
@@ -60,7 +60,8 @@
     <div id="excel-modal">
         <h3>📊 엑셀 데이터 일괄 업로드</h3>
         <p style="font-size:0.85em; color:#d63031; font-weight:bold;">순서: 브랜드 | 제품명 | 굴절률 | 설계 | 정가 | 판매가 | S_Min | S_Max | C_Min</p>
-        <textarea id="excel-input" style="width:100%; height:60%; margin-top:10px; font-family:monospace; padding:10px;" placeholder="데이터를 붙여넣으세요..."></textarea>
+        <textarea id="excel-input" style="width:100%; height:60%; margin-top:10px; font-family:monospace; padding:10px;" 
+            placeholder="데이터를 붙여넣으세요..."></textarea>
         <div style="margin-top:20px; text-align:right;">
             <button class="btn-ui" style="background:#666;" onclick="closeExcelModal()">취소</button>
             <button class="btn-ui" style="background:var(--danger);" onclick="processExcel()">🚀 즉시 적용 (덮어쓰기)</button>
@@ -72,7 +73,7 @@
             <button class="btn-ui" style="background:#27ae60;" onclick="openExcelModal()">📊 엑셀 일괄 업로드</button>
             <div style="display:flex; gap:10px;">
                 <button class="btn-ui" style="background:#9b59b6;" onclick="exportData()">📤 파일백업</button>
-                <button id="saveBtn" class="btn-ui" style="background:var(--success); border: 2px solid #fff;" onclick="saveData()">💾 서버에 최종저장</button>
+                <button id="saveBtn" class="btn-ui" style="background:var(--success); border: 2px solid #fff;" onclick="saveData()">💾 서버에 최종저장 (전 기기 반영)</button>
                 <button class="btn-ui" style="background:#666;" onclick="toggleAdmin()">❌ 닫기</button>
             </div>
         </div>
@@ -104,11 +105,11 @@
 </div>
 
 <script>
-    // Firebase Config (주소 형식 보강)
+    // [수정완료] 에러 메시지에 따라 databaseURL 주소를 변경했습니다.
     const firebaseConfig = {
         apiKey: "AIzaSyBV128h-2uzJUjGsazgK0XXn6f0uVnMyV8",
         authDomain: "eyegentry-5c7de.firebaseapp.com",
-        databaseURL: "https://eyegentry-5c7de-default-rtdb.asia-southeast1.firebasedatabase.app/",
+        databaseURL: "https://eyegentry-5c7de-default-rtdb.firebaseio.com",
         projectId: "eyegentry-5c7de",
         storageBucket: "eyegentry-5c7de.firebasestorage.app",
         messagingSenderId: "772851251300",
@@ -125,46 +126,25 @@
     let adminSelectedTabId = 't1';
     let openBrandIndex = null;
 
-    // 서버 연결 후 모든 동작 시작 (안전장치)
     function loadDataFromServer() {
-        db.ref('lensData').once('value').then((snapshot) => {
+        db.ref('lensData').on('value', (snapshot) => {
             const data = snapshot.val();
             if (data) {
                 if(data.categories) categories = data.categories;
                 if(data.brands) brands = data.brands;
                 if(data.issues) issues = data.issues;
-            }
-            startApp();
-        }).catch((err) => {
-            console.error("서버 로드 에러:", err);
-            startApp(); // 에러나도 일단 시작은 하게 함
-        });
-    }
-
-    function startApp() {
-        renderIssueSelect();
-        renderApp();
-        // 실시간 감시 모드 활성화 (저장 시 다른 기기 자동 갱신)
-        db.ref('lensData').on('value', (snapshot) => {
-            const data = snapshot.val();
-            if(data) {
-                categories = data.categories || categories;
-                brands = data.brands || brands;
-                issues = data.issues || issues;
                 renderApp();
                 if(document.getElementById('admin-panel').style.display === 'block') renderAdmin();
-            }
+            } else { renderApp(); }
         });
     }
 
     function init() {
-        // 도수 선택창 초기화
         const sOpts = getPowerOptions(false, 0);
         const cOpts = getPowerOptions(true, 0);
-        document.getElementById('rs').innerHTML = sOpts;
-        document.getElementById('ls').innerHTML = sOpts;
-        document.getElementById('rc').innerHTML = cOpts;
-        document.getElementById('lc').innerHTML = cOpts;
+        document.getElementById('rs').innerHTML = sOpts; document.getElementById('ls').innerHTML = sOpts;
+        document.getElementById('rc').innerHTML = cOpts; document.getElementById('lc').innerHTML = cOpts;
+        renderIssueSelect();
         loadDataFromServer();
     }
 
@@ -196,7 +176,7 @@
                 }
             });
         });
-        document.getElementById('main-display').innerHTML = html || `<p style="text-align:center; padding:50px; grid-column: 1 / -1; color:#888;">조회된 제품이 없습니다.</p>`;
+        document.getElementById('main-display').innerHTML = html || `<p style="text-align:center; padding:50px; grid-column: 1 / -1; color:#888;">데이터를 불러오는 중이거나 제품이 없습니다.</p>`;
     }
 
     function renderAdmin() {
@@ -272,13 +252,22 @@
     }
 
     function saveData() { 
-        if(!confirm("현재 데이터를 서버에 저장하여 모든 기기에 반영하시겠습니까?")) return;
+        if(!confirm("서버에 최종 저장하시겠습니까?")) return;
         const btn = document.getElementById('saveBtn');
         btn.innerText = "⏳ 저장 중...";
+        btn.disabled = true;
+
+        // 5초 타임아웃 강제 설정
+        const timer = setTimeout(() => {
+            btn.innerText = "💾 서버에 최종저장"; btn.disabled = false;
+            alert("❌ 서버 응답 없음 (파이어베이스 '규칙'이 true인지 확인하세요)");
+        }, 5000);
+
         db.ref('lensData').set({ categories, brands, issues }, (err) => {
-            btn.innerText = "💾 서버에 최종저장";
+            clearTimeout(timer);
+            btn.innerText = "💾 서버에 최종저장"; btn.disabled = false;
             if(err) alert("❌ 저장 실패: " + err.message);
-            else alert("✅ 서버 저장 완료! 모든 기기에 실시간 반영되었습니다.");
+            else alert("✅ 서버 저장 완료! 이제 다른 기기에서도 확인 가능합니다.");
         });
     }
     
