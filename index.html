@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>아이젠트리 충남도청점 V16.1</title>
+    <title>아이젠트리 충남도청점 V16.2</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
@@ -47,7 +47,7 @@
 
 <div class="app-container">
     <header>
-        <div class="logo-area"><h2>아이젠트리 충남도청점</h2><span style="font-size:0.8em; opacity:0.7; margin-left:10px;">V16.1 MASTER</span></div>
+        <div class="logo-area"><h2>아이젠트리 충남도청점</h2><span style="font-size:0.8em; opacity:0.7; margin-left:10px;">V16.2 MASTER</span></div>
         <div class="top-controls">
             <div class="control-group"><label>대상:</label><select id="ageSel" onchange="renderApp()"><option value="adult" selected>성인</option><option value="student">학생</option><option value="senior">시니어</option></select></div>
             <div class="control-group"><label>불편함:</label><select id="issueSel" onchange="renderApp()"></select></div>
@@ -61,7 +61,7 @@
         <h3>📊 엑셀 데이터 일괄 업로드</h3>
         <p style="font-size:0.85em; color:#d63031; font-weight:bold;">순서: 브랜드 | 제품명 | 굴절률 | 설계 | 정가 | 판매가 | S_Min | S_Max | C_Min</p>
         <textarea id="excel-input" style="width:100%; height:60%; margin-top:10px; font-family:monospace; padding:10px;" 
-            placeholder="데이터를 붙여넣으세요..."></textarea>
+            placeholder="[여기에 엑셀 데이터를 붙여넣으세요] 예: 케미,퍼펙트 UV,1.56,구면,30000,20000,-6.00,4.00,-2.00"></textarea>
         <div style="margin-top:20px; text-align:right;">
             <button class="btn-ui" style="background:#666;" onclick="closeExcelModal()">취소</button>
             <button class="btn-ui" style="background:var(--danger);" onclick="processExcel()">🚀 즉시 적용 (덮어쓰기)</button>
@@ -105,7 +105,6 @@
 </div>
 
 <script>
-    // [수정완료] 에러 메시지에 따라 databaseURL 주소를 변경했습니다.
     const firebaseConfig = {
         apiKey: "AIzaSyBV128h-2uzJUjGsazgK0XXn6f0uVnMyV8",
         authDomain: "eyegentry-5c7de.firebaseapp.com",
@@ -187,15 +186,36 @@
         brands.forEach((b, bi) => b.lenses.forEach((l, li) => { if(l.tabId === adminSelectedTabId) tabLenses.push({ bi, li, name:l.name, brandName: b.name, order:l.order }); }));
         tabLenses.sort((a,b) => (a.order||99)-(b.order||99));
         document.getElementById('admin-lens-order-list').innerHTML = tabLenses.map(l => `<div class="tag-row" style="background:#fff;"><button class="btn-small" onclick="moveInTab(${l.bi}, ${l.li}, -1)">▲</button><button class="btn-small" onclick="moveInTab(${l.bi}, ${l.li}, 1)">▼</button><select onchange="brands[${l.bi}].lenses[${l.li}].tabId=this.value; renderAdmin(); renderApp();">${categories.filter(c=>c.id!=='ai').map(c => `<option value="${c.id}" ${l.tabId===c.id?'selected':''}>${c.name}</option>`).join('')}</select> <b>${l.name}</b></div>`).join('');
+        
         let bHtml = '';
         brands.forEach((b, bi) => {
             const active = openBrandIndex === bi;
-            bHtml += `<div style="border:1px solid #ddd; border-radius:8px; margin-bottom:10px;"><div style="cursor:pointer; background:#e9ecef; padding:10px; display:flex; justify-content:space-between;" onclick="openBrandIndex=${active?null:bi}; renderAdmin();"><span><b>${b.name}</b> (${b.lenses.length})</span></div><div style="padding:15px; display:${active?'block':'none'}">브랜드명: <input type="text" value="${b.name}" onchange="brands[${bi}].name=this.value; renderApp();"> <button class="btn-ui" style="background:var(--danger); float:right;" onclick="if(confirm('삭제?')){brands.splice(${bi},1); renderAdmin();}">브랜드 삭제</button>${b.lenses.map((l, li) => `
+            // 브랜드 화살표 버튼 복구
+            bHtml += `<div style="border:1px solid #ddd; border-radius:8px; margin-bottom:10px;">
+                <div style="cursor:pointer; background:#e9ecef; padding:10px; display:flex; justify-content:space-between;" onclick="openBrandIndex=${active?null:bi}; renderAdmin();">
+                    <span><b>${b.name}</b> (${b.lenses.length})</span>
+                    <div>
+                        <button class="btn-small" onclick="event.stopPropagation(); moveItem(brands, ${bi}, -1); renderAdmin();">▲</button>
+                        <button class="btn-small" onclick="event.stopPropagation(); moveItem(brands, ${bi}, 1); renderAdmin();">▼</button>
+                    </div>
+                </div>
+                <div style="padding:15px; display:${active?'block':'none'}">
+                브랜드명: <input type="text" value="${b.name}" onchange="brands[${bi}].name=this.value; renderApp();"> 
+                <button class="btn-ui" style="background:var(--danger); float:right;" onclick="if(confirm('삭제?')){brands.splice(${bi},1); renderAdmin();}">브랜드 삭제</button>
+                ${b.lenses.map((l, li) => `
                 <div class="admin-lens-item" style="border:1px solid #eee; padding:10px; margin-top:10px; border-radius:8px; background:#fdfdfd;">
-                    <div style="display:flex; gap:10px; margin-bottom:10px; align-items:center;">🛡️ <b>제품:</b> <input type="text" value="${l.name}" onchange="brands[${bi}].lenses[${li}].name=this.value; renderApp();" style="flex:1"> <label><input type="checkbox" ${l.isSale ? 'checked' : ''} onchange="brands[${bi}].lenses[${li}].isSale=this.checked; renderApp();"> 🔥 행사</label><button onclick="brands[${bi}].lenses.splice(${li},1); renderAdmin();">×</button></div>
+                    <div style="display:flex; gap:10px; margin-bottom:10px; align-items:center;">
+                        🛡️ <b>제품:</b> <input type="text" value="${l.name}" onchange="brands[${bi}].lenses[${li}].name=this.value; renderApp();" style="flex:1"> 
+                        <label><input type="checkbox" ${l.isSale ? 'checked' : ''} onchange="brands[${bi}].lenses[${li}].isSale=this.checked; renderApp();"> 🔥 행사</label>
+                        <button class="btn-small" onclick="moveItem(brands[${bi}].lenses, ${li}, -1); renderAdmin();">▲</button>
+                        <button class="btn-small" onclick="moveItem(brands[${bi}].lenses, ${li}, 1); renderAdmin();">▼</button>
+                        <button onclick="brands[${bi}].lenses.splice(${li},1); renderAdmin();">×</button>
+                    </div>
                     <b>💡 한줄설명:</b> <input type="text" value="${l.desc||''}" style="width:90%; margin-bottom:10px;" onchange="brands[${bi}].lenses[${li}].desc=this.value; renderApp();"><br>
                     대상: ${['student','adult','senior'].map(a=>`<label><input type="checkbox" ${l.targetAges && l.targetAges.includes(a)?'checked':''} onchange="toggleF(${bi},${li},'age','${a}')">${a}</label>`).join(' ')}<br>
-                    ${l.items.map((it, ii) => `<div style="display:grid; grid-template-columns: 60px 1fr 80px 80px 180px 30px; gap:5px; margin-top:5px;"><input type="text" value="${it.idx}" onchange="brands[${bi}].lenses[${li}].items[ii].idx=this.value; renderApp();"><input type="text" value="${it.spec}" onchange="brands[${bi}].lenses[${li}].items[ii].spec=this.value; renderApp();"><input type="text" value="${it.pOff}" onchange="brands[${bi}].lenses[${li}].items[ii].pOff=this.value; renderApp();"><input type="text" value="${it.pSale}" onchange="brands[${bi}].lenses[${li}].items[ii].pSale=this.value; renderApp();"><div style="font-size:0.75em; display:flex; gap:2px; align-items:center; background:#eee; padding:2px; border-radius:3px;">S<input type="number" step="0.25" value="${it.sMin}" style="width:40px" onchange="brands[${bi}].lenses[${li}].items[ii].sMin=parseFloat(this.value)">~<input type="number" step="0.25" value="${it.sMax}" style="width:40px" onchange="brands[${bi}].lenses[${li}].items[ii].sMax=parseFloat(this.value)"> C<input type="number" step="0.25" value="${it.cMin||0}" style="width:40px" onchange="brands[${bi}].lenses[${li}].items[ii].cMin=parseFloat(this.value)"></div><button onclick="brands[${bi}].lenses[${li}].items.splice(${ii},1); renderAdmin();">×</button></div>`).join('')}
+                    ${l.items.map((it, ii) => `<div style="display:grid; grid-template-columns: 60px 1fr 80px 80px 180px 30px; gap:5px; margin-top:5px;">
+                        <input type="text" value="${it.idx}" onchange="brands[${bi}].lenses[${li}].items[ii].idx=this.value; renderApp();"><input type="text" value="${it.spec}" onchange="brands[${bi}].lenses[${li}].items[ii].spec=this.value; renderApp();"><input type="text" value="${it.pOff}" onchange="brands[${bi}].lenses[${li}].items[ii].pOff=this.value; renderApp();"><input type="text" value="${it.pSale}" onchange="brands[${bi}].lenses[${li}].items[ii].pSale=this.value; renderApp();">
+                        <div style="font-size:0.75em; display:flex; gap:2px; align-items:center; background:#eee; padding:2px; border-radius:3px;">S<input type="number" step="0.25" value="${it.sMin}" style="width:40px" onchange="brands[${bi}].lenses[${li}].items[ii].sMin=parseFloat(this.value)">~<input type="number" step="0.25" value="${it.sMax}" style="width:40px" onchange="brands[${bi}].lenses[${li}].items[ii].sMax=parseFloat(this.value)"> C<input type="number" step="0.25" value="${it.cMin||0}" style="width:40px" onchange="brands[${bi}].lenses[${li}].items[ii].cMin=parseFloat(this.value)"></div><button onclick="brands[${bi}].lenses[${li}].items.splice(${ii},1); renderAdmin();">×</button></div>`).join('')}
                     <button class="btn-ui" style="background:#3498db; font-size:0.75em; margin-top:10px;" onclick="addSingleItem(${bi}, ${li})">+ 품목 추가</button></div>`).join('')}<button class="btn-ui" style="background:var(--success); margin-top:15px; width:100%;" onclick="addNewLens(${bi})">+ 새 제품 카드 추가</button></div></div>`;
         });
         document.getElementById('admin-brands-list').innerHTML = bHtml;
@@ -218,11 +238,12 @@
     }
     function moveItem(arr, idx, dir) { let target = idx + dir; if(target >= 0 && target < arr.length) { [arr[idx], arr[target]] = [arr[target], arr[idx]]; } renderAdmin(); }
     function toggleF(bi, li, type, val) { 
-        let l = brands[bi].lenses[li];
-        if(!l.targetAges) l.targetAges = ['adult'];
-        if(!l.targetIssues) l.targetIssues = ['none'];
-        let arr = type === 'age' ? l.targetAges : l.targetIssues;
-        if(arr.includes(val)) arr.splice(arr.indexOf(val), 1); else arr.push(val);
+        let lens = brands[bi].lenses[li];
+        if(!lens.targetAges) lens.targetAges = ['adult'];
+        if(!lens.targetIssues) lens.targetIssues = ['none'];
+        let arr = type === 'age' ? lens.targetAges : lens.targetIssues;
+        let idx = arr.indexOf(val);
+        if(idx !== -1) arr.splice(idx, 1); else arr.push(val);
         renderApp();
     }
     function addNewBrand() { brands.push({ name: '새 브랜드', lenses: [] }); openBrandIndex = brands.length - 1; renderAdmin(); }
@@ -248,7 +269,7 @@
             let l = b.lenses.find(x => x.name === lN); if(!l) { l = { name: lN, tabId: 't1', bgColor: '#2c3e50', order: b.lenses.length+1, isSale: false, targetAges:['adult'], targetIssues:['none'], desc: '', items: [] }; b.lenses.push(l); }
             l.items.push({ idx, spec, pOff: pO||'0', pSale: pS||'0', sMin: parseFloat(sMn)||-10, sMax: parseFloat(sMx)||6, cMin: parseFloat(cMn)||-4 });
         });
-        if(newBrands.length > 0) { brands = newBrands; renderAdmin(); renderApp(); closeExcelModal(); alert("즉시 적용되었습니다! 마지막에 [최종저장]을 눌러주세요."); }
+        if(newBrands.length > 0) { brands = newBrands; renderAdmin(); renderApp(); closeExcelModal(); alert("즉시 적용되었습니다! 마지막에 [서버에 최종저장]을 눌러주세요."); }
     }
 
     function saveData() { 
@@ -257,17 +278,16 @@
         btn.innerText = "⏳ 저장 중...";
         btn.disabled = true;
 
-        // 5초 타임아웃 강제 설정
         const timer = setTimeout(() => {
             btn.innerText = "💾 서버에 최종저장"; btn.disabled = false;
-            alert("❌ 서버 응답 없음 (파이어베이스 '규칙'이 true인지 확인하세요)");
+            alert("❌ 서버 응답 없음 (연결을 확인하세요)");
         }, 5000);
 
         db.ref('lensData').set({ categories, brands, issues }, (err) => {
             clearTimeout(timer);
             btn.innerText = "💾 서버에 최종저장"; btn.disabled = false;
             if(err) alert("❌ 저장 실패: " + err.message);
-            else alert("✅ 서버 저장 완료! 이제 다른 기기에서도 확인 가능합니다.");
+            else alert("✅ 서버 저장 완료! 모든 기기에 실시간 반영되었습니다.");
         });
     }
     
