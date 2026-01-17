@@ -2,52 +2,70 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>아이젠트리 충남도청점 V16.2</title>
+    <title>아이젠트리 충남도청점 V19.9</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
         :root { --primary: #2c3e50; --accent: #3498db; --bg: #f4f7f6; --success: #27ae60; --danger: #e74c3c; --sale: #ff4757; }
-        body { font-family: 'Pretendard', sans-serif; background: var(--bg); margin: 0; padding: 10px; }
-        .app-container { max-width: 1800px; margin: 0 auto; background: white; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); overflow: hidden; }
-        header { background: #2c3e50; color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid var(--accent); }
-        .logo-area { display: flex; align-items: baseline; gap: 15px; }
-        .top-controls { display: flex; gap: 10px; align-items: center; }
-        .control-group { display: flex; align-items: center; gap: 5px; background: rgba(255,255,255,0.1); padding: 5px 10px; border-radius: 8px; }
-        select { padding: 6px 10px; border-radius: 5px; border: none; font-weight: bold; cursor: pointer; }
-        .tabs-bar { display: flex; background: #eee; border-bottom: 1px solid #ddd; overflow-x: auto; }
-        .tab { padding: 18px 30px; cursor: pointer; font-weight: bold; color: #666; white-space: nowrap; }
-        .tab.active { background: white; color: var(--accent); box-shadow: inset 0 -4px 0 var(--accent); }
-        .content-body { padding: 25px; min-height: 600px; }
-        .card-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+        body { font-family: 'Pretendard', 'Apple SD Gothic Neo', sans-serif; background: var(--bg); margin: 0; padding: 10px; color: #333; }
+        .app-container { max-width: 1800px; margin: 0 auto; background: white; border-radius: 15px; box-shadow: 0 15px 50px rgba(0,0,0,0.1); overflow: hidden; }
+        header { background: #2c3e50; color: white; padding: 20px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 5px solid var(--accent); }
+        .logo-area h2 { margin: 0; font-size: 1.6em; letter-spacing: -1px; }
+        .top-controls { display: flex; gap: 12px; align-items: center; }
+        .control-group { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.15); padding: 6px 12px; border-radius: 10px; font-size: 0.9em; }
+        select { padding: 8px 12px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; outline: none; background: white; }
+        .tabs-bar { display: flex; background: #f8f9fa; border-bottom: 1px solid #ddd; overflow-x: auto; padding: 0 10px; }
+        .tab { padding: 20px 30px; cursor: pointer; font-weight: 800; color: #888; white-space: nowrap; transition: 0.3s; position: relative; }
+        .tab.active { color: var(--accent); }
+        .tab.active::after { content:''; position:absolute; bottom:0; left:20%; right:20%; height:4px; background:var(--accent); border-radius:10px 10px 0 0; }
+        .content-body { padding: 30px; min-height: 700px; }
+        .btn-ui { padding: 10px 20px; border: none; border-radius: 10px; cursor: pointer; color: white; font-weight: bold; font-size: 0.95em; transition: 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); display: inline-flex; align-items: center; gap: 6px; }
+        .btn-ui:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.15); filter: brightness(1.1); }
+        .btn-small { padding: 5px 10px; font-size: 0.8em; background: #95a5a6; color: white; border-radius: 6px; border: none; cursor: pointer; transition: 0.2s; }
+        .matrix-container { width: 100%; overflow-x: auto; background: white; border-radius: 15px; border: 1px solid #e0e0e0; margin-bottom: 40px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+        .matrix-title { padding: 15px 25px; font-size: 1.2em; font-weight: bold; color: white; display: flex; justify-content: space-between; align-items: center; }
+        .matrix-table { width: 100%; border-collapse: collapse; min-width: 900px; }
+        .matrix-table th { padding: 20px 15px; border-bottom: 2px solid #eee; border-right: 1px solid #f0f0f0; }
+        .col-header-info { display: flex; flex-direction: column; gap: 5px; align-items: center; }
+        .m-grade-name { font-size: 1.1em; font-weight: 900; margin-bottom: 5px; }
+        .m-grade-desc { font-size: 0.8em; font-weight: normal; color: rgba(255,255,255,0.9); line-height: 1.4; max-width: 180px; }
+        .m-grade-specs { font-size: 0.75em; background: rgba(0,0,0,0.2); padding: 3px 8px; border-radius: 5px; margin-top: 5px; color: white; }
+        .matrix-table td { padding: 18px 10px; border-bottom: 1px solid #f0f0f0; border-right: 1px solid #f0f0f0; text-align: center; }
+        .idx-col { background: #f8f9fa; font-weight: bold; width: 80px; color: #666; }
+        .price-sale-m { font-size: 1.15em; font-weight: 900; }
+        .sale-text { color: var(--sale); }
+        .off-text { font-size: 0.75em; color: #bbb; text-decoration: line-through; display: block; }
+        .disabled-row { opacity: 0.15; filter: grayscale(1); pointer-events: none; }
+        .card-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 25px; }
         @media (max-width: 1400px) { .card-grid { grid-template-columns: repeat(3, 1fr); } }
         @media (max-width: 1000px) { .card-grid { grid-template-columns: repeat(2, 1fr); } }
-        .lens-card { position: relative; border: 1px solid #ddd; border-radius: 12px; background: white; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: flex; flex-direction: column; transition: 0.2s; }
-        .lens-card.is-sale { border: 2px solid var(--sale); animation: sale-glow 1.5s infinite alternate; z-index: 1; }
-        @keyframes sale-glow { from { box-shadow: 0 0 5px rgba(255, 71, 87, 0.3); } to { box-shadow: 0 0 20px rgba(255, 71, 87, 0.6); transform: translateY(-5px); } }
-        .sale-badge { position: absolute; top: -5px; right: -5px; background: var(--sale); color: white; padding: 5px 15px; font-weight: 900; font-size: 0.8em; transform: rotate(15deg); box-shadow: 2px 2px 5px rgba(0,0,0,0.2); border-radius: 5px; z-index: 2; }
-        .card-head { padding: 12px; color: white; font-weight: bold; text-align: center; font-size: 1.1em; }
-        .lens-one-liner { padding: 10px 12px; background: #f0f7ff; border-bottom: 1px solid #e0e0e0; font-size: 0.88em; color: #2c3e50; border-left: 5px solid var(--accent); margin: 8px; border-radius: 4px; line-height: 1.5; font-weight: 500; }
+        .lens-card { border-radius: 15px; background: white; border: 1px solid #eee; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
+        .card-head { padding: 15px; color: white; font-weight: 900; text-align: center; font-size: 1.1em; }
+        .lens-one-liner { padding: 10px 15px; background: #f0f7ff; border-bottom: 1px solid #e0e0e0; font-size: 0.88em; color: #2c3e50; border-left: 5px solid var(--accent); margin: 8px; border-radius: 4px; line-height: 1.5; font-weight: 600; }
         .card-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-        .card-table th { background: #f8f9fa; font-size: 0.75em; color: #888; padding: 5px; border-bottom: 1px solid #eee; }
-        .card-table td { padding: 10px 8px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; text-align: center; }
-        .price-box { display: flex; flex-direction: column; align-items: flex-end; justify-content: center; gap: 2px; }
-        .p-off { font-size: 0.75em; color: #bbb; text-decoration: line-through; line-height: 1; }
-        .p-sale { color: #d63031; font-weight: 800; font-size: 1.05em; line-height: 1; }
-        .disabled-row { opacity: 0.15; filter: grayscale(1); pointer-events: none; }
-        .admin-panel { display: none; background: #f1f3f5; padding: 25px; border-bottom: 2px solid #ddd; max-height: 85vh; overflow-y: auto; }
-        .admin-section { background: white; padding: 15px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #dee2e6; }
-        .tag-row { display: flex; align-items: center; gap: 10px; background: #f8f9fa; padding: 8px; border-radius: 5px; margin-bottom: 5px; border: 1px solid #eee; }
-        .btn-ui { padding: 6px 12px; border: none; border-radius: 5px; cursor: pointer; color: white; font-weight: bold; font-size: 0.85em; }
-        .btn-small { padding: 3px 8px; font-size: 0.75em; background: #95a5a6; color: white; border-radius: 4px; border: none; cursor: pointer; }
-        #excel-modal { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); width:80%; height:80%; background:white; z-index:1000; padding:30px; border-radius:15px; box-shadow: 0 0 50px rgba(0,0,0,0.5); }
-        #excel-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:999; }
+        .card-table th { background: #f8f9fa; font-size: 0.75em; color: #888; padding: 8px; border-bottom: 1px solid #eee; }
+        .card-table td { padding: 12px 8px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; text-align: center; font-size: 0.9em; }
+        .price-box { display: flex; flex-direction: column; align-items: flex-end; justify-content: center; gap: 2px; padding-right: 10px; }
+        .p-off { font-size: 0.78em; color: #bbb; text-decoration: line-through; }
+        .p-sale { color: #d63031; font-weight: 900; font-size: 1.05em; }
+        .tab-banner-img { width: 100%; max-width: 1200px; display: block; margin: 40px auto 0; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+        #ui-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:1999; }
+        #matrix-modal, #excel-modal { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); width:95%; height:90%; background:white; z-index:2000; padding:30px; border-radius:15px; box-shadow: 0 0 100px rgba(0,0,0,0.5); overflow-y:auto; }
+        .admin-panel { display: none; background: #f1f3f5; padding: 30px; border-bottom: 2px solid #ddd; max-height: 85vh; overflow-y: auto; }
+        .admin-section { background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #dee2e6; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .tag-row { display: flex; align-items: center; gap: 10px; background: #f8f9fa; padding: 10px; border-radius: 8px; margin-bottom: 8px; border: 1px solid #eee; }
+        .matrix-editor-table { width:100%; border-collapse: collapse; margin-top: 15px; }
+        .matrix-editor-table th, .matrix-editor-table td { border: 1px solid #ddd; padding: 12px; text-align: center; }
+        .matrix-editor-table input[type="text"] { width: 90%; padding: 8px; border: 1px solid #ccc; border-radius: 5px; text-align: center; }
+        .m-header-actions { display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 10px; }
+        input[type="color"] { width: 32px; height: 32px; border: none; background: none; cursor: pointer; border-radius: 50%; overflow: hidden; }
     </style>
 </head>
 <body>
 
 <div class="app-container">
     <header>
-        <div class="logo-area"><h2>아이젠트리 충남도청점</h2><span style="font-size:0.8em; opacity:0.7; margin-left:10px;">V16.2 MASTER</span></div>
+        <div class="logo-area"><h2>아이젠트리 충남도청점</h2><span style="font-size:0.8em; opacity:0.7; margin-left:10px;">V19.9 MASTER</span></div>
         <div class="top-controls">
             <div class="control-group"><label>대상:</label><select id="ageSel" onchange="renderApp()"><option value="adult" selected>성인</option><option value="student">학생</option><option value="senior">시니어</option></select></div>
             <div class="control-group"><label>불편함:</label><select id="issueSel" onchange="renderApp()"></select></div>
@@ -56,52 +74,80 @@
         </div>
     </header>
 
-    <div id="excel-overlay" onclick="closeExcelModal()"></div>
+    <div id="ui-overlay" onclick="closeAllModals()"></div>
+
+    <div id="matrix-modal">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <h3>🔳 매트릭스 가격표 관리자 (브랜드별)</h3>
+            <button class="btn-ui" style="background:#666;" onclick="closeMatrix()">창 닫기</button>
+        </div>
+        <div id="matrix-editor" style="display:none; border: 3px solid var(--accent); padding: 25px; border-radius: 15px; background: #fff; margin-bottom:20px;">
+            <div style="display:flex; gap:15px; margin-bottom:15px; flex-wrap:wrap; align-items:center; background:#f8f9fa; padding:15px; border-radius:10px;">
+                브랜드: <input type="text" id="m-brand" style="width:120px;" placeholder="브랜드">
+                컬러: <input type="color" id="m-brand-color" value="#2c3e50">
+                시리즈명: <input type="text" id="m-name" style="width:180px;" placeholder="시리즈명">
+                출력 탭: <select id="m-tab"></select>
+            </div>
+            <div style="background: #f0f7ff; padding: 10px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #d0e7ff; font-size: 0.9em;">
+                <b>✨ AI 추천 설정:</b>&nbsp;&nbsp;
+                대상 연령: <span id="m-ages-wrap"></span>&nbsp;&nbsp;|&nbsp;&nbsp;
+                해당 증상: <span id="m-issues-wrap"></span>
+            </div>
+            <div style="overflow-x:auto;">
+                <table class="matrix-editor-table"><thead><tr id="m-header"></tr></thead><tbody id="m-body"></tbody></table>
+            </div>
+            <div style="margin-top:20px; text-align:right;">
+                <button class="btn-ui" style="background:var(--success);" onclick="saveMatrixToMemory()">✅ 매트릭스 저장</button>
+                <button class="btn-ui" style="background:#666;" onclick="hideMatrixEditor()">취소</button>
+            </div>
+        </div>
+        <div id="matrix-list-area">
+            <h4>등록된 매트릭스 목록</h4>
+            <div id="saved-matrices-list" style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;"></div>
+            <button class="btn-ui" style="background:var(--accent); margin-top:20px;" onclick="showMatrixEditor()">+ 새 브랜드 매트릭스 추가</button>
+        </div>
+    </div>
+
     <div id="excel-modal">
-        <h3>📊 엑셀 데이터 일괄 업로드</h3>
-        <p style="font-size:0.85em; color:#d63031; font-weight:bold;">순서: 브랜드 | 제품명 | 굴절률 | 설계 | 정가 | 판매가 | S_Min | S_Max | C_Min</p>
-        <textarea id="excel-input" style="width:100%; height:60%; margin-top:10px; font-family:monospace; padding:10px;" 
-            placeholder="[여기에 엑셀 데이터를 붙여넣으세요] 예: 케미,퍼펙트 UV,1.56,구면,30000,20000,-6.00,4.00,-2.00"></textarea>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h3>📊 엑셀 데이터 일괄 업로드</h3>
+            <button class="btn-ui" style="background:#666;" onclick="closeExcelModal()">닫기</button>
+        </div>
+        <p style="font-size:0.85em; color:#d63031; font-weight:bold; margin:10px 0;">순서: 브랜드 | 제품명 | 굴절률 | 설계 | 권장가 | 할인가 | S_Min | S_Max | C_Min</p>
+        <textarea id="excel-input" style="width:100%; height:60%; font-family:monospace; padding:15px; border:1px solid #ccc; border-radius:10px;" placeholder="엑셀 데이터를 붙여넣으세요..."></textarea>
         <div style="margin-top:20px; text-align:right;">
-            <button class="btn-ui" style="background:#666;" onclick="closeExcelModal()">취소</button>
             <button class="btn-ui" style="background:var(--danger);" onclick="processExcel()">🚀 즉시 적용 (덮어쓰기)</button>
         </div>
     </div>
 
     <div id="admin-panel" class="admin-panel">
-        <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
-            <button class="btn-ui" style="background:#27ae60;" onclick="openExcelModal()">📊 엑셀 일괄 업로드</button>
+        <div style="display:flex; justify-content:space-between; margin-bottom:30px;">
             <div style="display:flex; gap:10px;">
-                <button class="btn-ui" style="background:#9b59b6;" onclick="exportData()">📤 파일백업</button>
-                <button id="saveBtn" class="btn-ui" style="background:var(--success); border: 2px solid #fff;" onclick="saveData()">💾 서버에 최종저장 (전 기기 반영)</button>
+                <button class="btn-ui" style="background:var(--accent); padding:15px 25px;" onclick="openMatrix()">🔳 매트릭스 가격표 관리</button>
+                <button class="btn-ui" style="background:var(--success);" onclick="openExcelModal()">📊 엑셀 일괄 업로드</button>
+            </div>
+            <div style="display:flex; gap:12px;">
+                <button class="btn-ui" style="background:#9b59b6;" onclick="exportData()">📤 백업저장</button>
+                <button id="saveBtn" class="btn-ui" style="background:var(--success); border: 2px solid #fff;" onclick="saveData()">💾 서버에 최종저장</button>
                 <button class="btn-ui" style="background:#666;" onclick="toggleAdmin()">❌ 닫기</button>
             </div>
         </div>
-        <div style="display:grid; grid-template-columns: 1fr 1fr 2.5fr; gap:20px;">
+
+        <div style="display:grid; grid-template-columns: 1.3fr 1fr 1.5fr; gap:25px;">
             <div class="admin-section">
-                <h4>📂 탭 관리</h4>
-                <div id="admin-tags-cats"></div>
-                <div style="margin-top:10px; display:flex; gap:5px;"><input type="text" id="new-cat-name" placeholder="새 탭 명" style="flex:1"><button class="btn-ui" style="background:var(--success);" onclick="addCategory()">+</button></div>
+                <h4>📂 탭 관리 및 이미지 설정</h4>
+                <div id="admin-tags-cats" style="max-height: 500px; overflow-y: auto; padding-right:5px;"></div>
+                <div style="margin-top:15px; display:flex; gap:5px;"><input type="text" id="new-cat-name" placeholder="새 탭 이름" style="flex:1; padding:8px; border-radius:5px; border:1px solid #ddd;"><button class="btn-ui" style="background:var(--success);" onclick="addCategory()">+</button></div>
             </div>
-            <div class="admin-section">
-                <h4>❓ 증상 관리</h4>
-                <div id="admin-tags-issues"></div>
-                <div style="margin-top:10px; display:flex; gap:5px;"><input type="text" id="new-issue-name" placeholder="새 증상 명" style="flex:1"><button class="btn-ui" style="background:var(--success);" onclick="addIssue()">+</button></div>
-            </div>
-            <div class="admin-section" style="background: #eef2f7; border: 2px solid var(--accent);">
-                <h4>🔢 출력 순서 관리 <select id="admin-order-tab-select" onchange="adminSelectedTabId = this.value; renderAdmin();"></select></h4>
-                <div id="admin-lens-order-list" style="max-height: 400px; overflow-y: auto;"></div>
-            </div>
+            <div class="admin-section"><h4>❓ 증상 관리</h4><div id="admin-tags-issues"></div><div style="margin-top:15px; display:flex; gap:5px;"><input type="text" id="new-issue-name" placeholder="새 증상 이름" style="flex:1; padding:8px; border-radius:5px; border:1px solid #ddd;"><button class="btn-ui" style="background:var(--success);" onclick="addIssue()">+</button></div></div>
+            <div class="admin-section" style="background: #eef2f7; border: 2px solid var(--accent);"><h4>🔢 출력 순서 관리 <select id="admin-order-tab-select" onchange="adminSelectedTabId = this.value; renderAdmin();"></select></h4><div id="admin-lens-order-list" style="max-height: 400px; overflow-y: auto; padding-right:5px;"></div></div>
         </div>
-        <div class="admin-section">
-            <h4>📦 브랜드 및 제품 설정</h4>
-            <div id="admin-brands-list"></div>
-            <button class="btn-ui" style="background:var(--accent); margin-top:15px;" onclick="addNewBrand()">+ 새 브랜드 추가</button>
-        </div>
+
+        <div class="admin-section"><h4>📦 일반 카드형 가격표 설정</h4><div id="admin-brands-list"></div><button class="btn-ui" style="background:var(--accent); margin-top:20px;" onclick="addNewBrand()">+ 새 브랜드 추가</button></div>
     </div>
 
     <div class="tabs-bar" id="tab-nav"></div>
-    <div class="content-body"><div id="main-display" class="card-grid"></div></div>
+    <div id="main-display" class="content-body"></div>
 </div>
 
 <script>
@@ -114,43 +160,39 @@
         messagingSenderId: "772851251300",
         appId: "1:772851251300:web:330b44914302a6b0048771"
     };
-
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    let categories = [{ id: 'ai', name: '✨ AI 추천', order: 0 }, { id: 't1', name: '단초점', order: 1 }, { id: 't2', name: '다초점', order: 2 }];
-    let brands = [];
-    let issues = [{id:'none', name:'없음'}, {id:'fatigue', name:'피로'}];
-    let currentTabId = 'ai';
-    let adminSelectedTabId = 't1';
-    let openBrandIndex = null;
+    let categories = [{ id: 'ai', name: '✨ AI 추천', order: 0, img:'' }, { id: 't1', name: '단초점', order: 1, img:'' }, { id: 't2', name: '다초점', order: 2, img:'' }];
+    let brands = [], issues = [{id:'none', name:'없음'}, {id:'fatigue', name:'피로'}], matrices = [];
+    let currentTabId = 'ai', adminSelectedTabId = 't1', openBrandIndex = null, editingMatrix = null;
+    const fixedIndices = ['1.56', '1.60', '1.67', '1.74'];
 
     function loadDataFromServer() {
         db.ref('lensData').on('value', (snapshot) => {
             const data = snapshot.val();
             if (data) {
-                if(data.categories) categories = data.categories;
-                if(data.brands) brands = data.brands;
-                if(data.issues) issues = data.issues;
-                renderApp();
+                categories = data.categories || categories;
+                brands = data.brands || [];
+                issues = data.issues || issues;
+                matrices = data.matrices || [];
+                renderApp(); renderIssueSelect();
                 if(document.getElementById('admin-panel').style.display === 'block') renderAdmin();
-            } else { renderApp(); }
+            } else { renderApp(); renderIssueSelect(); }
         });
     }
 
     function init() {
-        const sOpts = getPowerOptions(false, 0);
-        const cOpts = getPowerOptions(true, 0);
+        const sOpts = getPowerOptions(false, 0); const cOpts = getPowerOptions(true, 0);
         document.getElementById('rs').innerHTML = sOpts; document.getElementById('ls').innerHTML = sOpts;
         document.getElementById('rc').innerHTML = cOpts; document.getElementById('lc').innerHTML = cOpts;
-        renderIssueSelect();
         loadDataFromServer();
     }
 
     function getPowerOptions(isCyl, val) {
         let h = '';
-        if(isCyl) { for(let i=0; i>=-6; i-=0.25) h += `<option value="${i}" ${i==val?'selected':''}>${i.toFixed(2)}</option>`; }
-        else { for(let i=10; i>=-20; i-=0.25) h += `<option value="${i}" ${i==val?'selected':''}>${i.toFixed(2)}</option>`; }
+        if(isCyl) { for(let i=0; i>=-6; i-=0.25) h += `<option value="${i}" ${i==0?'selected':''}>${i.toFixed(2)}</option>`; }
+        else { for(let i=10; i>=-20; i-=0.25) h += `<option value="${i}" ${i==0?'selected':''}>${i.toFixed(2)}</option>`; }
         return h;
     }
 
@@ -158,140 +200,195 @@
 
     function renderApp() {
         const sortedCats = [...categories].sort((a,b) => a.order - b.order);
-        document.getElementById('tab-nav').innerHTML = sortedCats.map(c => `<div class="tab ${currentTabId===c.id?'active':''}" onclick="currentTabId='${c.id}'; adminSelectedTabId=(currentTabId==='ai'?'t1':currentTabId); renderApp();">${c.name}</div>`).join('');
+        document.getElementById('tab-nav').innerHTML = sortedCats.map(c => `<div class="tab ${currentTabId===c.id?'active':''}" onclick="currentTabId='${c.id}'; renderApp();">${c.name}</div>`).join('');
         const rs = parseFloat(document.getElementById('rs').value), rc = parseFloat(document.getElementById('rc').value);
         const ls = parseFloat(document.getElementById('ls').value), lc = parseFloat(document.getElementById('lc').value);
         const age = document.getElementById('ageSel').value, issue = document.getElementById('issueSel').value;
+        const mainDisplay = document.getElementById('main-display');
+        let finalHtml = '';
 
-        let html = '';
-        brands.forEach(b => {
-            b.lenses.forEach(l => {
-                const matchTab = (currentTabId === 'ai' && l.targetIssues && l.targetIssues.includes(issue) && issue !== 'none') || (l.tabId === currentTabId);
-                if(matchTab && l.targetAges && l.targetAges.includes(age)) {
-                    html += `<div class="lens-card ${l.isSale ? 'is-sale' : ''}">${l.isSale ? '<div class="sale-badge">SALE</div>' : ''}<div class="card-head" style="background:${l.bgColor}">${b.name} ${l.name}</div>${l.desc ? `<div class="lens-one-liner">💡 ${l.desc}</div>` : ''}<table class="card-table"><thead><tr><th style="width:60px;">Index</th><th>사양</th><th style="width:110px; text-align:right; padding-right:15px;">가격</th></tr></thead><tbody>${l.items.map(it => {
-                        const out = (rs > it.sMax || rs < it.sMin || rc < it.cMin || ls > it.sMax || ls < it.sMin || lc < it.cMin);
-                        return `<tr class="${out?'disabled-row':''}"><td>${it.idx}</td><td>${it.spec}</td><td style="text-align:right;"><div class="price-box"><span class="p-off">${Number(it.pOff).toLocaleString()}원</span><span class="p-sale">${Number(it.pSale).toLocaleString()}원</span></div></td></tr>`;
-                    }).join('')}</tbody></table></div>`;
-                }
+        // 1. 매트릭스 렌즈 출력
+        matrices.filter(m => {
+            const matchTab = (currentTabId === m.tabId);
+            const matchAI = (currentTabId === 'ai' && m.targetIssues && m.targetIssues.includes(issue) && issue !== 'none' && m.targetAges && m.targetAges.includes(age));
+            return matchTab || matchAI;
+        }).forEach(m => {
+            let mHtml = `<div class="matrix-container">
+                <div class="matrix-title" style="background:${m.brandColor || '#2c3e50'}"><span>${m.brand} - ${m.name}</span></div>
+                <table class="matrix-table"><thead><tr><th class="idx-col">굴절률</th>`;
+            m.cols.forEach(col => {
+                mHtml += `<th style="background:${col.bgColor || '#f8f9fa'}; color:${col.bgColor?'white':'#333'}">
+                    <div class="col-header-info">
+                        <span class="m-grade-name">${col.name}</span>
+                        ${col.desc ? `<span class="m-grade-desc">${col.desc}</span>` : ''}
+                        ${(col.addInfo || col.corridor) ? `<span class="m-grade-specs">${col.addInfo ? `ADD: ${col.addInfo}` : ''} ${col.addInfo && col.corridor ? '/' : ''} ${col.corridor ? `누진: ${col.corridor}` : ''}</span>` : ''}
+                        ${col.isSale ? '<span class="sale-badge" style="position:static; margin-top:5px; padding:2px 8px;">SALE</span>' : ''}
+                    </div>
+                </th>`;
             });
+            mHtml += `</tr></thead><tbody>`;
+            fixedIndices.forEach(idx => {
+                const safeKey = 'idx_' + idx.replace('.', '');
+                const isOutOfRange = (rs > (idx==='1.56'?4:6) || rs < (idx==='1.56'?-6:-10) || rc < -4);
+                mHtml += `<tr class="${isOutOfRange?'disabled-row':''}">
+                    <td class="idx-col">${idx}</td>`;
+                m.cols.forEach(col => {
+                    const p = col.prices[safeKey] || {off:'', sale:''};
+                    mHtml += `<td style="background:${col.isSale?'#fff5f5':'none'}">
+                        ${p.off ? `<span class="off-text">${Number(p.off).toLocaleString()}원</span>` : ''}
+                        <span class="price-sale-m ${col.isSale?'sale-text':''}">${p.sale ? Number(p.sale).toLocaleString()+'원' : '-'}</span>
+                    </td>`;
+                });
+                mHtml += `</tr>`;
+            });
+            mHtml += `</tbody></table></div>`;
+            finalHtml += mHtml;
         });
-        document.getElementById('main-display').innerHTML = html || `<p style="text-align:center; padding:50px; grid-column: 1 / -1; color:#888;">데이터를 불러오는 중이거나 제품이 없습니다.</p>`;
+
+        // 2. 일반 렌즈 카드 출력
+        let cardHtml = '<div class="card-grid">';
+        brands.forEach(b => b.lenses.forEach(l => {
+            const matchTab = (currentTabId === l.tabId);
+            const matchAI = (currentTabId === 'ai' && l.targetIssues && l.targetIssues.includes(issue) && issue !== 'none' && l.targetAges && l.targetAges.includes(age));
+            if(matchTab || matchAI) {
+                let rows = ''; let hasMatch = false;
+                l.items.forEach(it => {
+                    const out = (rs > it.sMax || rs < it.sMin || rc < it.cMin || ls > it.sMax || ls < it.sMin || lc < it.cMin);
+                    if(!out) hasMatch = true;
+                    rows += `<tr class="${out?'disabled-row':''}">
+                        <td>${it.idx}</td><td>${it.spec}</td>
+                        <td style="text-align:right;">
+                            <div class="price-box">
+                                <span class="p-off">${it.pOff ? Number(it.pOff).toLocaleString()+'원' : ''}</span>
+                                <span class="p-sale">${it.pSale ? Number(it.pSale).toLocaleString()+'원' : '0원'}</span>
+                            </div>
+                        </td>
+                    </tr>`;
+                });
+                if(hasMatch || (rs===0 && ls===0)) {
+                    cardHtml += `<div class="lens-card">
+                        <div class="card-head" style="background:${l.bgColor || '#2c3e50'}">${b.name} ${l.name}</div>
+                        ${l.desc ? `<div class="lens-one-liner">💡 ${l.desc}</div>` : ''}
+                        <table class="card-table">
+                            <thead><tr><th>굴절률</th><th>설계</th><th style="text-align:right;">가격</th></tr></thead>
+                            <tbody>${rows}</tbody>
+                        </table>
+                    </div>`;
+                }
+            }
+        }));
+        cardHtml += '</div>';
+        finalHtml += cardHtml;
+
+        const currentTabObj = categories.find(c => c.id === currentTabId);
+        if(currentTabObj && currentTabObj.img) {
+            finalHtml += `<img src="${currentTabObj.img}" class="tab-banner-img" alt="배너">`;
+        }
+        mainDisplay.innerHTML = finalHtml || `<p style="text-align:center; padding:100px; color:#bbb; font-size:1.2em;">🔍 조건에 맞는 제품이 없습니다.</p>`;
     }
 
     function renderAdmin() {
         document.getElementById('admin-order-tab-select').innerHTML = categories.filter(c=>c.id!=='ai').sort((a,b)=>a.order-b.order).map(c => `<option value="${c.id}" ${adminSelectedTabId===c.id?'selected':''}>${c.name} 탭 설정</option>`).join('');
-        document.getElementById('admin-tags-cats').innerHTML = categories.map((c, idx) => `<div class="tag-row"><input type="number" value="${c.order}" style="width:40px" onchange="categories[${idx}].order=parseInt(this.value); renderApp();"><input type="text" value="${c.name}" style="flex:1" onchange="categories[${idx}].name=this.value; renderApp();"><button class="btn-small" style="background:var(--danger)" onclick="delCategory('${c.id}')">×</button></div>`).join('');
-        document.getElementById('admin-tags-issues').innerHTML = issues.map((is, idx) => `<div class="tag-row"><input type="text" value="${is.name}" style="flex:1" onchange="issues[${idx}].name=this.value; renderIssueSelect();"><button class="btn-small" style="background:var(--danger)" onclick="delIssue('${is.id}')">×</button></div>`).join('');
-        let tabLenses = [];
-        brands.forEach((b, bi) => b.lenses.forEach((l, li) => { if(l.tabId === adminSelectedTabId) tabLenses.push({ bi, li, name:l.name, brandName: b.name, order:l.order }); }));
-        tabLenses.sort((a,b) => (a.order||99)-(b.order||99));
-        document.getElementById('admin-lens-order-list').innerHTML = tabLenses.map(l => `<div class="tag-row" style="background:#fff;"><button class="btn-small" onclick="moveInTab(${l.bi}, ${l.li}, -1)">▲</button><button class="btn-small" onclick="moveInTab(${l.bi}, ${l.li}, 1)">▼</button><select onchange="brands[${l.bi}].lenses[${l.li}].tabId=this.value; renderAdmin(); renderApp();">${categories.filter(c=>c.id!=='ai').map(c => `<option value="${c.id}" ${l.tabId===c.id?'selected':''}>${c.name}</option>`).join('')}</select> <b>${l.name}</b></div>`).join('');
         
+        document.getElementById('admin-tags-cats').innerHTML = categories.map((c, idx) => `
+            <div class="tag-row" style="flex-direction:column; align-items:stretch; gap:8px; padding:15px; background:#fff; border:1px solid #ddd; margin-bottom:15px; border-radius:8px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span style="font-size:0.8em; color:#999;">순서</span>
+                        <input type="number" value="${c.order}" style="width:45px; padding:5px; border-radius:4px; border:1px solid #ccc;" onchange="categories[${idx}].order=parseInt(this.value); renderApp();">
+                        <input type="text" value="${c.name}" style="padding:5px; font-weight:bold; border-radius:4px; border:1px solid #ccc;" onchange="categories[${idx}].name=this.value; renderApp();">
+                    </div>
+                    <button class="btn-small" style="background:var(--danger)" onclick="delCategory('${c.id}')">삭제</button>
+                </div>
+                <div style="background:#f1f3f5; padding:10px; border-radius:8px;">
+                    <div style="font-size:0.75em; color:var(--primary); font-weight:bold; margin-bottom:5px;">🖼️ 하단 홍보 이미지 URL</div>
+                    <input type="text" value="${c.img||''}" placeholder="http://... 이미지 주소를 넣어주세요" style="width:100%; padding:10px; border:1px solid #ccc; font-size:0.85em; border-radius:4px;" onchange="categories[${idx}].img=this.value; renderApp();">
+                </div>
+            </div>`).join('');
+
+        document.getElementById('admin-tags-issues').innerHTML = issues.map((is, idx) => `<div class="tag-row"><input type="text" value="${is.name}" style="flex:1; padding:5px;" onchange="issues[${idx}].name=this.value; renderIssueSelect();"><button class="btn-small" style="background:var(--danger)" onclick="delIssue('${is.id}')">×</button></div>`).join('');
+        
+        let orderList = [];
+        brands.forEach((b, bi) => b.lenses.forEach((l, li) => { if(l.tabId === adminSelectedTabId) orderList.push({ type: 'normal', bi, li, name: l.name, bName: b.name, order: l.order || 99 }); }));
+        matrices.forEach((m, mi) => { if(m.tabId === adminSelectedTabId) orderList.push({ type: 'matrix', mi, name: `[매트릭스] ${m.brand} - ${m.name}`, bName: m.brand, order: m.order || 99 }); });
+        orderList.sort((a, b) => a.order - b.order);
+        document.getElementById('admin-lens-order-list').innerHTML = orderList.map(item => `<div class="tag-row" style="background:#fff;"><button class="btn-small" onclick="moveOrderItem('${item.type}', ${item.bi??item.mi}, ${item.li??0}, -1)">▲</button><button class="btn-small" onclick="moveOrderItem('${item.type}', ${item.bi??item.mi}, ${item.li??0}, 1)">▼</button><b>${item.name}</b></div>`).join('');
+
         let bHtml = '';
         brands.forEach((b, bi) => {
             const active = openBrandIndex === bi;
-            // 브랜드 화살표 버튼 복구
-            bHtml += `<div style="border:1px solid #ddd; border-radius:8px; margin-bottom:10px;">
-                <div style="cursor:pointer; background:#e9ecef; padding:10px; display:flex; justify-content:space-between;" onclick="openBrandIndex=${active?null:bi}; renderAdmin();">
-                    <span><b>${b.name}</b> (${b.lenses.length})</span>
-                    <div>
-                        <button class="btn-small" onclick="event.stopPropagation(); moveItem(brands, ${bi}, -1); renderAdmin();">▲</button>
-                        <button class="btn-small" onclick="event.stopPropagation(); moveItem(brands, ${bi}, 1); renderAdmin();">▼</button>
-                    </div>
-                </div>
-                <div style="padding:15px; display:${active?'block':'none'}">
-                브랜드명: <input type="text" value="${b.name}" onchange="brands[${bi}].name=this.value; renderApp();"> 
-                <button class="btn-ui" style="background:var(--danger); float:right;" onclick="if(confirm('삭제?')){brands.splice(${bi},1); renderAdmin();}">브랜드 삭제</button>
-                ${b.lenses.map((l, li) => `
-                <div class="admin-lens-item" style="border:1px solid #eee; padding:10px; margin-top:10px; border-radius:8px; background:#fdfdfd;">
-                    <div style="display:flex; gap:10px; margin-bottom:10px; align-items:center;">
-                        🛡️ <b>제품:</b> <input type="text" value="${l.name}" onchange="brands[${bi}].lenses[${li}].name=this.value; renderApp();" style="flex:1"> 
-                        <label><input type="checkbox" ${l.isSale ? 'checked' : ''} onchange="brands[${bi}].lenses[${li}].isSale=this.checked; renderApp();"> 🔥 행사</label>
-                        <button class="btn-small" onclick="moveItem(brands[${bi}].lenses, ${li}, -1); renderAdmin();">▲</button>
-                        <button class="btn-small" onclick="moveItem(brands[${bi}].lenses, ${li}, 1); renderAdmin();">▼</button>
-                        <button onclick="brands[${bi}].lenses.splice(${li},1); renderAdmin();">×</button>
-                    </div>
-                    <b>💡 한줄설명:</b> <input type="text" value="${l.desc||''}" style="width:90%; margin-bottom:10px;" onchange="brands[${bi}].lenses[${li}].desc=this.value; renderApp();"><br>
-                    대상: ${['student','adult','senior'].map(a=>`<label><input type="checkbox" ${l.targetAges && l.targetAges.includes(a)?'checked':''} onchange="toggleF(${bi},${li},'age','${a}')">${a}</label>`).join(' ')}<br>
-                    ${l.items.map((it, ii) => `<div style="display:grid; grid-template-columns: 60px 1fr 80px 80px 180px 30px; gap:5px; margin-top:5px;">
-                        <input type="text" value="${it.idx}" onchange="brands[${bi}].lenses[${li}].items[ii].idx=this.value; renderApp();"><input type="text" value="${it.spec}" onchange="brands[${bi}].lenses[${li}].items[ii].spec=this.value; renderApp();"><input type="text" value="${it.pOff}" onchange="brands[${bi}].lenses[${li}].items[ii].pOff=this.value; renderApp();"><input type="text" value="${it.pSale}" onchange="brands[${bi}].lenses[${li}].items[ii].pSale=this.value; renderApp();">
-                        <div style="font-size:0.75em; display:flex; gap:2px; align-items:center; background:#eee; padding:2px; border-radius:3px;">S<input type="number" step="0.25" value="${it.sMin}" style="width:40px" onchange="brands[${bi}].lenses[${li}].items[ii].sMin=parseFloat(this.value)">~<input type="number" step="0.25" value="${it.sMax}" style="width:40px" onchange="brands[${bi}].lenses[${li}].items[ii].sMax=parseFloat(this.value)"> C<input type="number" step="0.25" value="${it.cMin||0}" style="width:40px" onchange="brands[${bi}].lenses[${li}].items[ii].cMin=parseFloat(this.value)"></div><button onclick="brands[${bi}].lenses[${li}].items.splice(${ii},1); renderAdmin();">×</button></div>`).join('')}
-                    <button class="btn-ui" style="background:#3498db; font-size:0.75em; margin-top:10px;" onclick="addSingleItem(${bi}, ${li})">+ 품목 추가</button></div>`).join('')}<button class="btn-ui" style="background:var(--success); margin-top:15px; width:100%;" onclick="addNewLens(${bi})">+ 새 제품 카드 추가</button></div></div>`;
+            bHtml += `<div style="border:1px solid #ddd; border-radius:12px; margin-bottom:12px; overflow:hidden;"><div style="cursor:pointer; background:#e9ecef; padding:15px; display:flex; justify-content:space-between; align-items:center;" onclick="openBrandIndex=${active?null:bi}; renderAdmin();"><span><b>${b.name}</b> (${b.lenses.length})</span><div><button class="btn-small" onclick="event.stopPropagation(); moveItem(brands, ${bi}, -1); renderAdmin();">▲</button><button class="btn-small" onclick="event.stopPropagation(); moveItem(brands, ${bi}, 1); renderAdmin();">▼</button></div></div><div style="padding:20px; display:${active?'block':'none'}">
+                브랜드명: <input type="text" value="${b.name}" style="padding:8px; border-radius:6px; border:1px solid #ccc;" onchange="brands[${bi}].name=this.value; renderApp();"> <button class="btn-small" style="background:var(--danger); float:right;" onclick="if(confirm('삭제?')){brands.splice(${bi},1); renderAdmin();}">브랜드 삭제</button>${b.lenses.map((l, li) => `
+                <div class="admin-lens-item" style="border:1px solid #eee; padding:15px; margin-top:15px; border-radius:10px; background:#fdfdfd;">
+                    <div style="display:flex; gap:10px; margin-bottom:12px; align-items:center;">🛡️ <input type="text" value="${l.name}" onchange="brands[${bi}].lenses[${li}].name=this.value; renderApp();" style="flex:1; padding:8px;" placeholder="제품명"> <input type="color" value="${l.bgColor || '#2c3e50'}" onchange="brands[${bi}].lenses[${li}].bgColor=this.value; renderApp();" title="카드 색상"> <label><input type="checkbox" ${l.isSale?'checked':''} onchange="brands[${bi}].lenses[${li}].isSale=this.checked; renderApp();"> 🔥행사</label> <select onchange="brands[${bi}].lenses[${li}].tabId=this.value; renderAdmin(); renderApp();">${categories.filter(c=>c.id!=='ai').map(c=>`<option value="${c.id}" ${l.tabId===c.id?'selected':''}>${c.name}</option>`).join('')}</select>
+                    <button class="btn-small" onclick="moveItem(brands[${bi}].lenses, ${li}, -1); renderAdmin();">▲</button><button class="btn-small" onclick="moveItem(brands[${bi}].lenses, ${li}, 1); renderAdmin();">▼</button><button onclick="brands[${bi}].lenses.splice(${li},1); renderAdmin();">×</button></div>
+                    <div style="margin-bottom:10px;"><input type="text" value="${l.desc||''}" style="width:95%; padding:8px; border:1px solid #eee; border-radius:4px;" onchange="brands[${bi}].lenses[${li}].desc=this.value; renderApp();" placeholder="💡 한줄 설명"></div>
+                    <div style="font-size:0.85em; margin-bottom:12px; background:#f8f9fa; padding:10px; border-radius:8px;">대상: ${['student','adult','senior'].map(a=>`<label style="margin-right:12px;"><input type="checkbox" ${l.targetAges && l.targetAges.includes(a)?'checked':''} onchange="toggleF(${bi},${li},'age','${a}')">${a}</label>`).join('')} | 불편함: ${issues.map(is=>`<label style="margin-right:12px;"><input type="checkbox" ${l.targetIssues && l.targetIssues.includes(is.id)?'checked':''} onchange="toggleF(${bi},${li},'issue','${is.id}')">${is.name}</label>`).join('')}</div>
+                    ${l.items.map((it, ii) => `<div style="display:grid; grid-template-columns: 60px 1fr 100px 100px 180px 30px; gap:8px; margin-top:8px;"><input type="text" value="${it.idx}" onchange="brands[${bi}].lenses[${li}].items[${ii}].idx=this.value; renderApp();"><input type="text" value="${it.spec}" onchange="brands[${bi}].lenses[${li}].items[${ii}].spec=this.value; renderApp();"><input type="text" value="${it.pOff}" onchange="brands[${bi}].lenses[${li}].items[${ii}].pOff=this.value; renderApp();" placeholder="권장가"><input type="text" value="${it.pSale}" onchange="brands[${bi}].lenses[${li}].items[${ii}].pSale=this.value; renderApp();" placeholder="할인가"><div style="font-size:0.75em; display:flex; gap:4px; align-items:center; background:#eee; padding:5px; border-radius:6px;">S<input type="number" step="0.25" value="${it.sMin}" style="width:45px" onchange="brands[${bi}].lenses[${li}].items[${ii}].sMin=parseFloat(this.value)">~<input type="number" step="0.25" value="${it.sMax}" style="width:45px" onchange="brands[${bi}].lenses[${li}].items[${ii}].sMax=parseFloat(this.value)"> C<input type="number" step="0.25" value="${it.cMin||0}" style="width:45px" onchange="brands[${bi}].lenses[${li}].items[${ii}].cMin=parseFloat(this.value)"></div><button onclick="brands[${bi}].lenses[${li}].items.splice(${ii},1); renderAdmin();">×</button></div>`).join('')}<button class="btn-ui" style="background:#3498db; font-size:0.8em; margin-top:10px; padding:6px 12px;" onclick="brands[${bi}].lenses[${li}].items.push({idx:'1.60', spec:'', pOff:'', pSale:'', sMin:-10, sMax:6, cMin:-4}); renderAdmin();">+ 사양 추가</button></div>`).join('')}<button class="btn-ui" style="background:var(--success); margin-top:15px; width:100%;" onclick="addNewLens(${bi})">+ 새 제품 카드 추가</button></div></div>`;
         });
         document.getElementById('admin-brands-list').innerHTML = bHtml;
     }
 
-    function addSingleItem(bi, li) { brands[bi].lenses[li].items.push({idx:'1.60', spec:'', pOff:'0', pSale:'0', sMin:-10, sMax:6, cMin:-4}); renderAdmin(); renderApp(); }
-    function moveInTab(bi, li, dir) {
-        let list = [];
-        brands.forEach((b, bIdx) => b.lenses.forEach((l, lIdx) => { if(l.tabId === adminSelectedTabId) list.push({ bIdx, lIdx, order: l.order || 99 }); }));
-        list.sort((a,b) => a.order - b.order);
-        let cur = list.findIndex(x => x.bIdx == bi && x.lIdx == li);
-        let tar = cur + dir;
-        if(tar >= 0 && tar < list.length) {
-            list.forEach((item, idx) => { brands[item.bIdx].lenses[item.lIdx].order = idx + 1; });
-            let temp = brands[list[cur].bIdx].lenses[list[cur].lIdx].order;
-            brands[list[cur].bIdx].lenses[list[cur].lIdx].order = brands[list[tar].bIdx].lenses[list[tar].lIdx].order;
-            brands[list[tar].bIdx].lenses[list[tar].lIdx].order = temp;
-            renderAdmin(); renderApp();
-        }
+    function openMatrix() { document.getElementById('ui-overlay').style.display='block'; document.getElementById('matrix-modal').style.display='block'; renderSavedMatrices(); }
+    function closeMatrix() { document.getElementById('ui-overlay').style.display='none'; document.getElementById('matrix-modal').style.display='none'; hideMatrixEditor(); }
+    function openExcelModal() { document.getElementById('ui-overlay').style.display='block'; document.getElementById('excel-modal').style.display='block'; }
+    function closeExcelModal() { document.getElementById('ui-overlay').style.display='none'; document.getElementById('excel-modal').style.display='none'; }
+    function closeAllModals() { closeMatrix(); closeExcelModal(); }
+
+    function renderSavedMatrices() { document.getElementById('saved-matrices-list').innerHTML = matrices.map((m, i) => `<div class="matrix-list-item" style="background:#f8f9fa; padding:15px; border-radius:10px; margin-bottom:10px; border:1px solid #ddd; display:flex; justify-content:space-between; align-items:center;"><span><b>${m.brand}</b> - ${m.name}</span><div><button class="btn-small" style="background:var(--accent);" onclick="editMatrix(${i})">수정</button><button class="btn-small" style="background:var(--danger); margin-left:5px;" onclick="if(confirm('삭제?')){matrices.splice(${i},1); renderSavedMatrices(); renderApp();}">삭제</button></div></div>`).join(''); }
+    function showMatrixEditor() { editingMatrix = { brand:'', brandColor:'#2c3e50', name:'', tabId:'t2', targetAges:['adult'], targetIssues:['none'], cols:[{name:'', desc:'', addInfo:'', corridor:'', bgColor:'#2c3e50', prices:{}, isSale: false}], order: matrices.length+1 }; updateMatrixEditorUI(); }
+    function editMatrix(i) { editingMatrix = JSON.parse(JSON.stringify(matrices[i])); if(!editingMatrix.targetAges) editingMatrix.targetAges = ['adult']; if(!editingMatrix.targetIssues) editingMatrix.targetIssues = ['none']; editingMatrix.originalIndex = i; updateMatrixEditorUI(); }
+    function hideMatrixEditor() { document.getElementById('matrix-editor').style.display = 'none'; }
+    function updateMatrixEditorUI() {
+        document.getElementById('matrix-editor').style.display = 'block';
+        document.getElementById('m-brand').value = editingMatrix.brand; document.getElementById('m-brand-color').value = editingMatrix.brandColor || '#2c3e50';
+        document.getElementById('m-name').value = editingMatrix.name; document.getElementById('m-tab').innerHTML = categories.filter(c=>c.id!=='ai').map(c=>`<option value="${c.id}" ${c.id===editingMatrix.tabId?'selected':''}>${c.name}</option>`).join('');
+        document.getElementById('m-ages-wrap').innerHTML = ['student','adult','senior'].map(a => `<label style="margin-right:10px;"><input type="checkbox" class="m-age-check" value="${a}" ${editingMatrix.targetAges.includes(a)?'checked':''}> ${a}</label>`).join('');
+        document.getElementById('m-issues-wrap').innerHTML = issues.map(is => `<label style="margin-right:10px;"><input type="checkbox" class="m-issue-check" value="${is.id}" ${editingMatrix.targetIssues.includes(is.id)?'checked':''}> ${is.name}</label>`).join('');
+        let hHtml = `<th>굴절률</th>`; editingMatrix.cols.forEach((col, i) => { hHtml += `<th><input type="text" class="m-col-name" data-col="${i}" value="${col.name}" placeholder="등급명" onchange="syncME()"><br><input type="text" class="m-col-desc" data-col="${i}" value="${col.desc||''}" placeholder="설명" style="font-size:0.8em; margin-top:5px;" onchange="syncME()"><div style="display:flex; gap:2px; margin-top:5px;"><input type="text" class="m-col-add" data-col="${i}" value="${col.addInfo||''}" placeholder="ADD" style="font-size:0.75em;" onchange="syncME()"><input type="text" class="m-col-cor" data-col="${i}" value="${col.corridor||''}" placeholder="누진" style="font-size:0.75em;" onchange="syncME()"></div><div class="m-header-actions"><button class="btn-small" onclick="moveMECol(${i},-1)">◀</button><button class="btn-small" onclick="moveMECol(${i},1)">▶</button><input type="color" class="m-col-color" data-col="${i}" value="${col.bgColor||'#2c3e50'}" onchange="syncME()"><label style="font-size:0.75em; cursor:pointer;"><input type="checkbox" class="m-col-sale" data-col="${i}" ${col.isSale?'checked':''} onchange="syncME()"> 🔥</label><button class="btn-small" style="background:var(--danger)" onclick="editingMatrix.cols.splice(${i},1); updateMatrixEditorUI();">×</button></div></th>`; });
+        hHtml += `<th style="cursor:pointer; background:var(--accent); color:white;" onclick="editingMatrix.cols.push({name:'', desc:'', addInfo:'', corridor:'', bgColor:'#2c3e50', prices:{}, isSale:false}); updateMatrixEditorUI();">+ 등급추가</th>`;
+        document.getElementById('m-header').innerHTML = hHtml;
+        let bHtml = ''; fixedIndices.forEach(idx => { const safeKey = 'idx_' + idx.replace('.',''); bHtml += `<tr><td style="background:#f8f9fa; font-weight:bold;">${idx}</td>`; editingMatrix.cols.forEach((col, i) => { const p = col.prices[safeKey] || {off:'', sale:''}; bHtml += `<td><div style="display:flex; flex-direction:column; gap:4px;"><input type="text" class="m-price-off" data-idx="${idx}" data-col="${i}" value="${p.off}" placeholder="권장가" onchange="syncME()"><input type="text" class="m-price-sale" data-idx="${idx}" data-col="${i}" value="${p.sale}" placeholder="할인가" onchange="syncME()"></div></td>`; }); bHtml += `<td></td></tr>`; });
+        document.getElementById('m-body').innerHTML = bHtml;
     }
-    function moveItem(arr, idx, dir) { let target = idx + dir; if(target >= 0 && target < arr.length) { [arr[idx], arr[target]] = [arr[target], arr[idx]]; } renderAdmin(); }
-    function toggleF(bi, li, type, val) { 
-        let lens = brands[bi].lenses[li];
-        if(!lens.targetAges) lens.targetAges = ['adult'];
-        if(!lens.targetIssues) lens.targetIssues = ['none'];
-        let arr = type === 'age' ? lens.targetAges : lens.targetIssues;
-        let idx = arr.indexOf(val);
-        if(idx !== -1) arr.splice(idx, 1); else arr.push(val);
-        renderApp();
+    function syncME() {
+        editingMatrix.brand = document.getElementById('m-brand').value; editingMatrix.brandColor = document.getElementById('m-brand-color').value;
+        editingMatrix.name = document.getElementById('m-name').value; editingMatrix.tabId = document.getElementById('m-tab').value; 
+        editingMatrix.targetAges = Array.from(document.querySelectorAll('.m-age-check:checked')).map(el => el.value);
+        editingMatrix.targetIssues = Array.from(document.querySelectorAll('.m-issue-check:checked')).map(el => el.value);
+        editingMatrix.cols.forEach((col, i) => { 
+            col.name = document.querySelector(`.m-col-name[data-col="${i}"]`).value; col.desc = document.querySelector(`.m-col-desc[data-col="${i}"]`).value;
+            col.addInfo = document.querySelector(`.m-col-add[data-col="${i}"]`).value; col.corridor = document.querySelector(`.m-col-cor[data-col="${i}"]`).value;
+            col.bgColor = document.querySelector(`.m-col-color[data-col="${i}"]`).value; col.isSale = document.querySelector(`.m-col-sale[data-col="${i}"]`).checked;
+            fixedIndices.forEach(idx => { const safeKey = 'idx_' + idx.replace('.',''); const off = document.querySelector(`.m-price-off[data-idx="${idx}"][data-col="${i}"]`).value; const sale = document.querySelector(`.m-price-sale[data-idx="${idx}"][data-col="${i}"]`).value; col.prices[safeKey] = { off, sale }; }); 
+        });
     }
-    function addNewBrand() { brands.push({ name: '새 브랜드', lenses: [] }); openBrandIndex = brands.length - 1; renderAdmin(); }
-    function addNewLens(bi) { brands[bi].lenses.push({ name: '새 제품', tabId: adminSelectedTabId, bgColor: '#2c3e50', order: brands[bi].lenses.length + 1, isSale: false, targetAges: ['adult'], targetIssues: ['none'], desc: '', items: [{idx:'1.60', spec:'', pOff:'0', pSale:'0', sMin:-10, sMax:6, cMin:-4}] }); renderAdmin(); renderApp(); }
-    function addCategory() { const name = document.getElementById('new-cat-name').value; if(name){ categories.push({id: 't'+Date.now(), name, order: categories.length}); document.getElementById('new-cat-name').value=''; renderAdmin(); renderApp();} }
-    function delCategory(id) { categories = categories.filter(c => c.id !== id); renderAdmin(); renderApp(); }
-    function addIssue() { const name = document.getElementById('new-issue-name').value; if(name){ issues.push({id: 'is'+Date.now(), name}); document.getElementById('new-issue-name').value=''; renderAdmin(); renderIssueSelect();} }
-    function delIssue(id) { issues = issues.filter(is => is.id !== id); renderAdmin(); renderIssueSelect(); }
-    function toggleAdmin() { const p = document.getElementById('admin-panel'); p.style.display = (p.style.display==='block'?'none':'block'); if(p.style.display==='block') renderAdmin(); }
-    function openExcelModal() { document.getElementById('excel-overlay').style.display = 'block'; document.getElementById('excel-modal').style.display = 'block'; }
-    function closeExcelModal() { document.getElementById('excel-overlay').style.display = 'none'; document.getElementById('excel-modal').style.display = 'none'; }
-    
+    function moveMECol(i, dir) { syncME(); let target = i + dir; if(target>=0 && target<editingMatrix.cols.length) { [editingMatrix.cols[i], editingMatrix.cols[target]] = [editingMatrix.cols[target], editingMatrix.cols[i]]; updateMatrixEditorUI(); } }
+    function saveMatrixToMemory() { syncME(); if(!editingMatrix.brand) return alert("브랜드 필수"); if(editingMatrix.originalIndex!==undefined) matrices[editingMatrix.originalIndex] = editingMatrix; else matrices.push(editingMatrix); hideMatrixEditor(); renderSavedMatrices(); renderApp(); }
     function processExcel() {
-        const input = document.getElementById('excel-input').value.trim();
-        if(!input) return;
-        if(!confirm("기존 데이터를 덮어씌울까요?")) return;
+        const input = document.getElementById('excel-input').value.trim(); if(!input) return; if(!confirm("기존 렌즈 데이터를 모두 지우고 덮어쓸까요?")) return;
         const newBrands = [];
         input.split('\n').forEach(line => {
-            const cols = line.includes('\t') ? line.split('\t') : line.split(',');
-            if(cols.length < 6 || cols[0].includes('브랜드')) return;
+            const cols = line.includes('\t') ? line.split('\t') : line.split(','); if(cols.length < 6 || cols[0].includes('브랜드')) return;
             const [bN, lN, idx, spec, pO, pS, sMn, sMx, cMn] = cols.map(c => c.trim().replace(/"/g, ''));
-            let b = newBrands.find(x => x.name === bN); if(!b) { b = { name: bN, lenses: [] }; newBrands.push(b); }
+            let b = newBrands.find(x => x.name === bN); if(!b) { b = { name: bN, lenses: [], brandColor: '#2c3e50' }; newBrands.push(b); }
             let l = b.lenses.find(x => x.name === lN); if(!l) { l = { name: lN, tabId: 't1', bgColor: '#2c3e50', order: b.lenses.length+1, isSale: false, targetAges:['adult'], targetIssues:['none'], desc: '', items: [] }; b.lenses.push(l); }
-            l.items.push({ idx, spec, pOff: pO||'0', pSale: pS||'0', sMin: parseFloat(sMn)||-10, sMax: parseFloat(sMx)||6, cMin: parseFloat(cMn)||-4 });
+            l.items.push({ idx: idx, spec: spec, pOff: pO||'0', pSale: pS||'0', sMin: parseFloat(sMn)||-10, sMax: parseFloat(sMx)||6, cMin: parseFloat(cMn)||-4 });
         });
-        if(newBrands.length > 0) { brands = newBrands; renderAdmin(); renderApp(); closeExcelModal(); alert("즉시 적용되었습니다! 마지막에 [서버에 최종저장]을 눌러주세요."); }
+        if(newBrands.length > 0) { brands = newBrands; renderApp(); renderAdmin(); closeExcelModal(); alert("데이터 적용 완료!"); }
     }
-
-    function saveData() { 
-        if(!confirm("서버에 최종 저장하시겠습니까?")) return;
-        const btn = document.getElementById('saveBtn');
-        btn.innerText = "⏳ 저장 중...";
-        btn.disabled = true;
-
-        const timer = setTimeout(() => {
-            btn.innerText = "💾 서버에 최종저장"; btn.disabled = false;
-            alert("❌ 서버 응답 없음 (연결을 확인하세요)");
-        }, 5000);
-
-        db.ref('lensData').set({ categories, brands, issues }, (err) => {
-            clearTimeout(timer);
-            btn.innerText = "💾 서버에 최종저장"; btn.disabled = false;
-            if(err) alert("❌ 저장 실패: " + err.message);
-            else alert("✅ 서버 저장 완료! 모든 기기에 실시간 반영되었습니다.");
-        });
-    }
-    
-    function exportData() { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify({categories, brands, issues}, null, 2)], { type: 'application/json' })); a.download = `백업.json`; a.click(); }
+    function moveOrderItem(type, mi_bi, li, dir) { if(type === 'matrix') { let target = mi_bi + dir; if(target >=0 && target < matrices.length) { [matrices[mi_bi].order, matrices[target].order] = [matrices[target].order || 99, matrices[mi_bi].order || 99]; [matrices[mi_bi], matrices[target]] = [matrices[target], matrices[mi_bi]]; } } else { moveItem(brands[mi_bi].lenses, li, dir); } renderAdmin(); renderApp(); }
+    function moveItem(arr, idx, dir) { let target = idx + dir; if(target >= 0 && target < arr.length) { [arr[idx].order, arr[target].order] = [arr[target].order||99, arr[idx].order||99]; [arr[idx], arr[target]] = [arr[target], arr[idx]]; } renderAdmin(); }
+    function toggleF(bi, li, type, val) { let l = brands[bi].lenses[li]; let arr = type === 'age' ? (l.targetAges = l.targetAges || []) : (l.targetIssues = l.targetIssues || []); let idx = arr.indexOf(val); if(idx !== -1) arr.splice(idx, 1); else arr.push(val); renderApp(); }
+    function addNewBrand() { brands.push({ name: '새 브랜드', lenses: [], brandColor: '#2c3e50' }); openBrandIndex = brands.length - 1; renderAdmin(); }
+    function addNewLens(bi) { brands[bi].lenses.push({ name: '새 제품', tabId: adminSelectedTabId, bgColor: '#2c3e50', targetAges:['adult'], targetIssues:['none'], items: [], order: brands[bi].lenses.length + 1 }); renderAdmin(); }
+    function addCategory() { const name = document.getElementById('new-cat-name').value; if(name){ categories.push({id: 't'+Date.now(), name: name, order: categories.length, img:''}); renderAdmin(); renderApp();} }
+    function addIssue() { const name = document.getElementById('new-issue-name').value; if(name){ issues.push({id: 'is'+Date.now(), name}); renderAdmin(); renderIssueSelect();} }
+    function delCategory(id) { categories = categories.filter(c => c.id !== id); renderAdmin(); renderApp(); }
+    function delIssue(id) { issues = issues.filter(is => is.id !== id); renderAdmin(); renderIssueSelect(); }
+    function toggleAdmin() { const p = document.getElementById('admin-panel'); p.style.display = (p.style.display==='block'?'none':'block'); if(p.style.display==='block') renderAdmin(); }
+    function saveData() { if(!confirm("서버에 저장?")) return; const btn = document.getElementById('saveBtn'); btn.innerText = "⏳ 저장 중..."; db.ref('lensData').set({ categories, brands, issues, matrices }, (err) => { btn.innerText = "💾 서버에 최종저장"; if(err) alert("실패: " + err.message); else alert("✅ 완료!"); }); }
+    function exportData() { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify({categories, brands, issues, matrices}, null, 2)], { type: 'application/json' })); a.download = `백업.json`; a.click(); }
     init();
 </script>
 </body>
