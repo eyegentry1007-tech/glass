@@ -92,7 +92,7 @@
 
 <div class="app-container">
     <header>
-        <div class="logo-area"><h2>아이젠트리 충남도청점</h2><span style="font-size:0.8em; opacity:0.7; margin-left:10px;">V23.6 MASTER</span></div>
+        <div class="logo-area"><h2>아이젠트리 충남도청점</h2><span style="font-size:0.8em; opacity:0.7; margin-left:10px;">V1.1 MASTER</span></div>
         <div class="top-controls">
             <button id="filter-toggle-btn" class="btn-ui" style="background:#95a5a6;" onclick="togglePowerFilter()">🔍 도수 적용 안함</button>
             <div class="control-group">
@@ -639,7 +639,18 @@
     function addNewLens(bi) { brands[bi].lenses.push({name: '새 제품', tabId: '', items: [], targetAges:['adult'], targetIssues:['none'], isSale:false, order: brands[bi].lenses.length * 10}); renderAdmin(); }
     function toggleT(bi, li, type, val) { let l = brands[bi].lenses[li]; let arr = (type === 'age') ? (l.targetAges = l.targetAges || []) : (l.targetIssues = l.targetIssues || []); let idx = arr.indexOf(val); if(idx > -1) arr.splice(idx, 1); else arr.push(val); renderApp(); }
     function processExcel() { const input = document.getElementById('excel-input').value.trim(); if(!input) return; input.split('\n').forEach(line => { const cols = line.split('\t'); if(cols.length < 6) return; const [bN, lN, idx, spec, pOff, pSale, sMin, sMax, cMin] = cols.map(c => c.trim()); let b = brands.find(x => x.name === bN); if(!b) { b = {name: bN, lenses: []}; brands.push(b); } let l = b.lenses.find(x => x.name === lN); if(!l) { l = {name: lN, tabId: '', items: [], targetAges:['adult'], targetIssues:['none'], order: b.lenses.length * 10}; b.lenses.push(l); } l.items.push({idx, spec, pOff, pSale, sMin: parseFloat(sMin)||-10, sMax: parseFloat(sMax)||6, cMin: parseFloat(cMin)||-4}); }); renderAdmin(); renderApp(); alert("업로드 완료"); }
-
+    // [초기화 함수] - 앱을 처음 실행할 때 호출됩니다.
+    function init() {
+        console.log("아이젠트리 충남도청점 시스템 시작...");
+        
+        // 1. 서버에서 데이터를 가져옵니다. (기존에 정의된 함수 호출)
+        if (typeof loadDataFromServer === "function") {
+            loadDataFromServer();
+        } else {
+            // 서버 연결 함수가 없을 경우를 대비한 기본 렌더링
+            renderApp();
+        }
+    }
     init();
 </script>
 </body>
