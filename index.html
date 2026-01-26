@@ -57,8 +57,35 @@
         .matrix-table { width: 100%; border-collapse: collapse; text-align: center; }
         .matrix-table th { padding: 20px 15px; background: #fdfdfd; border-bottom: 2px solid #eee; }
         .idx-col { background: #f8f9fa; font-weight: bold; width: 85px; color: #666; font-size: 1.05em; border-right: 1px solid #eee; }
+        .card-grid {
+            display: grid !important; 
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); 
+            row-gap: 5px !important;    /* ★ 위아래 간격 (원하는 만큼 숫자를 바꾸세요) */
+            column-gap: 25px !important; /* 좌우 간격 */
+            align-items: start;          /* 카드 높이가 달라도 위쪽 기준으로 정렬 */
+        }
+        .lens-card, .matrix-container {
+            margin-top: 0 !important;
+            margin-bottom: 0 !important;
+        }
+        
+        .content-body {
+            padding-top: 10px !important;    /* 30px에서 5px로 강제 축소 */
+            padding-bottom: 30px !important; /* 하단 여백도 함께 조절 */
+        }
 
-        .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 25px; }
+        /* 2. 카드 그리드 자체의 상단 마진 제거 */
+        .card-grid {
+            margin-top: 0 !important;
+            padding-top: 0 !important;
+        }
+
+        /* 3. (기존 코드 확인) 카드들의 상하 마진 완전 제거 */
+        .lens-card, .matrix-container {
+            margin-top: 0 !important;
+            margin-bottom: 0 !important;
+        }
+
         .lens-card { border-radius: 15px; background: white; border: 1px solid #eee; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
         .card-head { padding: 18px; color: white; font-weight: 900; font-size: 1.15em; display: flex; justify-content: space-between; align-items: center; }
         .sale-badge { background: #fff; color: var(--sale); font-size: 0.75em; padding: 3px 8px; border-radius: 5px; font-weight: 900; }
