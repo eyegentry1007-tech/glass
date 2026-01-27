@@ -87,13 +87,34 @@
         }
 
         .lens-card { border-radius: 15px; background: white; border: 1px solid #eee; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
-        .card-head { padding: 18px; color: white; font-weight: 900; font-size: 1.15em; display: flex; justify-content: space-between; align-items: center; }
+        .card-head { padding: 12px 18px; color: white; font-weight: 900; font-size: 1.15em; display: flex; justify-content: space-between; align-items: center; }
         .sale-badge { background: #fff; color: var(--sale); font-size: 0.75em; padding: 3px 8px; border-radius: 5px; font-weight: 900; }
-        .lens-one-liner { padding: 12px 15px; background: #f0f7ff; border-bottom: 1px solid #e0e0e0; font-size: 0.9em; color: #2c3e50; border-left: 5px solid var(--accent); margin: 10px; border-radius: 4px; font-weight: 700; }
-        .card-table { width: 100%; border-collapse: collapse; }
-        .card-table th { background: #f8f9fa; font-size: 0.75em; color: #888; padding: 10px; border-bottom: 1px solid #eee; }
-        .card-table td { padding: 15px 10px; border-bottom: 1px solid #f0f0f0; }
+        .lens-one-liner { padding: 8px 15px; background: #f0f7ff; border-bottom: 1px solid #e0e0e0; font-size: 0.9em; color: #2c3e50; border-left: 5px solid var(--accent); margin: 5px 10px 8px 10px; border-radius: 4px; font-weight: 700; }
 
+        /* --- 단초점 가격표 정렬 및 폭 조절 --- */
+        .card-table { width: 100%; border-collapse: collapse; }
+
+        /* 굴절률과 설계 칸은 중앙 정렬 */
+        .card-table th, .card-table td { 
+            padding: 10px 5px !important; 
+            text-align: center !important; 
+            vertical-align: middle;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        /* 제목(헤더) 부분만 따로 글자 크기와 배경색 유지 */
+        .card-table th { background: #f8f9fa; font-size: 0.75em; color: #888; }
+
+        /* 마지막 '가격' 칸만 오른쪽 정렬 */
+        .card-table th:last-child, .card-table td:last-child { 
+            text-align: right !important; 
+            padding-right: 15px !important; 
+        }
+
+        /* 첫 번째 '굴절률' 칸 폭을 좁게 조절 */
+        .card-table th:nth-child(1), .card-table td:nth-child(1) { 
+            width: 85px !important; 
+        }
         /* 관리자 패널 */
         .admin-panel { display: none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); width:98%; height:94%; background:#f1f3f5; z-index:2000; padding:30px; border-radius:15px; overflow-y:auto; box-sizing:border-box; }
         .admin-section { background: white; padding: 25px; border-radius: 15px; margin-bottom: 25px; border: 1px solid #dee2e6; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
@@ -113,6 +134,39 @@
         .matrix-item-body { padding: 20px; background: #fff; border-top: 1px solid #eee; display: none; }
         .matrix-item-header b { font-size: 1.1em; color: var(--primary); }
         .matrix-badge { font-size: 0.75em; padding: 2px 8px; border-radius: 4px; background: #eee; color: #666; font-weight: bold; }
+        @keyframes badge-blink {
+            0% { background-color: #d63031; transform: scale(1); }
+            50% { background-color: #ff0000; transform: scale(1.1); }
+            100% { background-color: #d63031; transform: scale(1); }
+        }
+        @keyframes card-vibrate {
+        0% { transform: translateY(0) scale(1); }
+        50% { transform: translateY(-5px) scale(1.01); box-shadow: 0 15px 45px rgba(214, 48, 49, 0.2); }
+        100% { transform: translateY(0) scale(1); }
+        }
+        /* 세일 상태인 카드 전용 스타일 */
+        .lens-card.sale-active {
+            border: 1px solid #eee !important;
+            animation: none !important;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05) !important;
+        }
+        .sale-badge.animate {
+            color: #ffff00 !important;        /* ★ 글자색: 노란색 */
+            background-color: #ff0000 !important; /* ★ 배경색: 빨간색 */
+            animation: badge-blink 0.5s infinite; /* 더 빠르게 번쩍임 */
+            padding: 4px 10px !important;
+            border-radius: 5px;
+            font-weight: 900;
+            display: inline-block;
+        }
+        /* 가격 색상 기본값: 검정색 */
+        .price-text {
+            color: #333; /* 기본 검정 */
+        }
+        /* 세일 중일 때만 빨간색으로 변경 */
+        .sale-active .price-text {
+            color: var(--sale) !important; /* 세일 시 빨간색 */
+        }
     </style>
 </head>
 <body class="filter-off">
@@ -172,11 +226,6 @@
                 <div style="display:flex; gap:5px;"><input type="text" id="new-cat-name" placeholder="새 탭 이름" style="flex:1; padding:10px; border-radius:8px; border:1px solid #ddd;"><button class="btn-ui" style="background:var(--success);" onclick="addCategory()">탭 추가</button></div>
             </div>
 
-            <div class="admin-section" style="background:#fff9f0;">
-                <h4>🔢 탭 노출 순서 관리</h4>
-                <div id="admin-tab-order-list" style="display:flex; flex-wrap:wrap; gap:10px;"></div>
-            </div>
-
             <div class="admin-section">
                 <h4>❓ 불편 증상 항목 관리</h4>
                 <div id="admin-issue-list" style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;"></div>
@@ -185,6 +234,11 @@
         </div>
 
         <div>
+            <div class="admin-section" style="background:#fff9f0;">
+                <h4>🔢 탭 노출 순서 관리</h4>
+                <div id="admin-tab-order-list" style="display:flex; flex-wrap:wrap; gap:10px;"></div>
+            </div>
+
             <div class="admin-section" style="border: 2px solid var(--accent);">
                 <h4>🔢 [통합] 해당 탭 내 제품 노출 순서 관리 
                     <select id="admin-order-tab-select" onchange="adminSelectedTabId = this.value; renderAdmin();" style="padding:10px; border-radius:8px; width:200px;"></select>
@@ -250,6 +304,21 @@
         return brightness > 128 ? '#333' : '#fff'; // 128보다 크면 밝은색이므로 검정글씨 반환
     }
     
+    // 버튼을 누를 때마다 다음 굴절률을 결정하는 함수
+    function getNextIndexValue(items) {
+        const sequence = ['1.56', '1.60', '1.67', '1.74']; // 순서 정의
+        if (!items || items.length === 0) return sequence[0]; // 아무것도 없으면 1.56 시작
+
+        const lastIdx = items[items.length - 1].idx; // 마지막으로 추가된 굴절률 확인
+        const currentIndex = sequence.indexOf(lastIdx);
+        
+        // 마지막이 1.74이거나 목록에 없으면 다시 1.56으로, 아니면 다음 순서로
+        if (currentIndex === -1 || currentIndex === sequence.length - 1) {
+            return sequence[0];
+        }
+        return sequence[currentIndex + 1];
+    }
+
     // [전역 변수]
     let categories = [{id:'ai', name:'✨ AI 추천'}], brands = [], issues = [{id:'none', name:'없음'}], matrices = [];
     let openMatrixIndex = null; // 아코디언 열림 상태 저장용
@@ -328,23 +397,61 @@
         document.getElementById('main-display').innerHTML = html + '</div>' + banner;
     }
 
+    /* --- 2번 단계 최종 교체 코드 --- */
     function renderNormalHtml(l) {
-        let rows = ''; let match = false;
-        l.items.forEach(it => {
-            const out = (userPower.rs > it.sMax || userPower.rs < it.sMin || userPower.rc < it.sMin || userPower.ls > it.sMax || userPower.ls < it.sMin || userPower.lc < it.sMin);
-            if(!out) match = true;
-            rows += `<tr class="${out?'disabled-row':''}"><td>${it.idx}</td><td>${it.spec}</td><td style="text-align:right;"><div style="display:flex; flex-direction:column; align-items:flex-end;"><span style="text-decoration:line-through; font-size:0.75em; color:#bbb;">${it.pOff?Number(it.pOff).toLocaleString()+'원':''}</span><span style="font-weight:900; color:var(--sale); font-size:1.1em;">${Number(it.pSale).toLocaleString()}원</span></div></td></tr>`;
+        let rows = ''; 
+        let match = false;
+        
+        // 1. 세일 상태(l.isSale)에 따라 카드에 'sale-active'라는 이름을 붙여줍니다.
+        const saleClass = l.isSale ? 'sale-active' : ''; 
+
+        /* --- 1. 도수 및 합도수 필터링 핵심 로직 --- */
+                l.items.forEach(it => {
+                    // 합도수(원시) 계산: S와 S+C 중 더 큰 값이 렌즈 두께의 기준이 됩니다.
+                    const rMaxP = Math.max(userPower.rs, userPower.rs + userPower.rc);
+                    const lMaxP = Math.max(userPower.ls, userPower.ls + userPower.lc);
+
+                    // 개별 도수 체크 (S구면 범위, C난시 범위 확인)
+                    const isOutIndividual = (userPower.rs > it.sMax || userPower.rs < it.sMin || userPower.rc < it.cMin || userPower.ls > it.sMax || userPower.ls < it.sMin || userPower.lc < it.cMin);
+                    
+                    // 합도수 체크 (∑합 칸에 값이 입력되어 있을 때만 작동)
+                    const isOutSum = (it.sumMax > 0 && (rMaxP > it.sumMax || lMaxP > it.sumMax));
+
+                    // 개별 범위나 합도수 중 하나라도 벗어나면 'out' 처리하여 가립니다.
+                    const out = isOutIndividual || isOutSum;
+                    
+                    if(!out) match = true;
+            
+            // 가격 출력 (NaN 방지 처리 포함)
+            const cleanOff = Number(String(it.pOff || 0).replace(/[^0-9]/g, ''));
+            const cleanSale = Number(String(it.pSale || 0).replace(/[^0-9]/g, ''));
+
+            rows += `<tr class="${out?'disabled-row':''}">
+                <td>${it.idx}</td>
+                <td>${it.spec}</td>
+                <td style="text-align:right;">
+                    <div style="display:flex; flex-direction:column; align-items:flex-end;">
+                        <span style="text-decoration:line-through; font-size:0.75em; color:#bbb;">
+                            ${cleanOff > 0 ? cleanOff.toLocaleString() + '원' : ''}
+                        </span>
+                        <span class="price-text" style="font-weight:900; font-size:1.1em;">
+                            ${cleanSale.toLocaleString()}원
+                        </span>
+                    </div>
+                </td>
+            </tr>`;
         });
+
         if(!match && (userPower.rs !== 0 || userPower.ls !== 0)) return '';
 
-        // 배경색과 글씨색 추출
         const bgColor = l.bgColor || '#2c3e50';
         const textColor = getContrastColor(bgColor);
 
-        return `<div class="lens-card">
+        // 2. 카드 전체 상자(lens-card)에 위에서 만든 saleClass를 적용합니다.
+        return `<div class="lens-card ${saleClass}">
             <div class="card-head" style="background:${bgColor}; color:${textColor}">
                 <span>${l.brandName} ${l.name}</span>
-                ${l.isSale ? `<span class="sale-badge" style="background:${textColor}; color:${bgColor};">SALE</span>` : ''}
+                ${l.isSale ? `<span class="sale-badge animate" style="background:${textColor}; color:${bgColor};">SALE</span>` : ''}
             </div>
             ${l.desc ? `<div class="lens-one-liner">💡 ${l.desc}</div>` : ''}
             <table class="card-table">
@@ -393,9 +500,16 @@
             h += `<tr class="${out?'disabled-row':''}"><td class="idx-col">${idx}</td>`;
             m.cols.forEach(c => {
                 const p = (c.prices && c.prices[sk]) || {off:'', sale:''};
+                const cleanOff = Number(String(p.off || 0).replace(/[^0-9]/g, ''));
+                const cleanSale = Number(String(p.sale || 0).replace(/[^0-9]/g, ''));
+
                 h += `<td>
-                        <div style="font-size:0.8em; color:#bbb; text-decoration:line-through;">${p.off?Number(p.off).toLocaleString():''}</div>
-                        <div style="font-weight:900; font-size:1.05em;">${p.sale?Number(p.sale).toLocaleString()+'원':'-'}</div>
+                        <div style="font-size:0.8em; color:#bbb; text-decoration:line-through;">
+                            ${cleanOff > 0 ? cleanOff.toLocaleString() + '원' : ''}
+                        </div>
+                        <div style="font-weight:900; font-size:1.05em;">
+                            ${cleanSale > 0 ? cleanSale.toLocaleString() + '원' : '-'}
+                        </div>
                     </td>`;
             });
             h += `</tr>`;
@@ -463,19 +577,31 @@
                                 연령: ${['student','adult','senior'].map(a => `<label style="margin-right:10px;"><input type="checkbox" ${l.targetAges?.includes(a)?'checked':''} onchange="toggleT(${bi},${li},'age','${a}')"> ${a}</label>`).join('')} | 
                                 증상: ${issues.map(is => `<label style="margin-right:10px;"><input type="checkbox" ${l.targetIssues?.includes(is.id)?'checked':''} onchange="toggleT(${bi},${li},'issue','${is.id}')"> ${is.name}</label>`).join('')}
                             </div>
-                            ${l.items.map((it, ii) => `
-                                <div style="display:grid; grid-template-columns: 60px 1fr 80px 80px 150px 30px; gap:5px; margin-bottom:8px;">
-                                    <input type="text" value="${it.idx}" onchange="brands[${bi}].lenses[${li}].items[${ii}].idx=this.value;" style="padding:5px;">
-                                    <input type="text" value="${it.spec}" onchange="brands[${bi}].lenses[${li}].items[${ii}].spec=this.value;" style="padding:5px;">
-                                    <input type="text" value="${it.pOff}" onchange="brands[${bi}].lenses[${li}].items[${ii}].pOff=this.value;" style="padding:5px;">
-                                    <input type="text" value="${it.pSale}" onchange="brands[${bi}].lenses[${li}].items[${ii}].pSale=this.value;" style="padding:5px;">
-                                    <div style="font-size:0.7em; background:#f0f0f0; padding:3px; border-radius:5px; display:flex; align-items:center; gap:2px;">
-                                        S <input type="number" step="0.25" value="${it.sMin}" style="width:40px;" onchange="brands[${bi}].lenses[${li}].items[${ii}].sMin=parseFloat(this.value)">~<input type="number" step="0.25" value="${it.sMax}" style="width:40px;" onchange="brands[${bi}].lenses[${li}].items[${ii}].sMax=parseFloat(this.value)">
-                                        C <input type="number" step="0.25" value="${it.cMin||0}" style="width:40px;" onchange="brands[${bi}].lenses[${li}].items[${ii}].cMin=parseFloat(this.value)">
-                                    </div>
-                                    <button onclick="brands[${bi}].lenses[${li}].items.splice(${ii},1); renderAdmin();">×</button>
-                                </div>`).join('')}
-                            <button class="btn-small" style="background:var(--accent); padding:8px 15px;" onclick="brands[${bi}].lenses[${li}].items.push({idx:'1.60', spec:'', pOff:'0', pSale:'0', sMin:-10, sMax:6, cMin:-4}); renderAdmin();">+ 사양 추가</button>
+                        ${l.items.map((it, ii) => `
+                            <div style="display:grid; grid-template-columns: 60px 160px 85px 85px 240px 45px; gap:5px; margin-bottom:8px; align-items:center;">
+                                <input type="text" value="${it.idx}" onchange="brands[${bi}].lenses[${li}].items[${ii}].idx=this.value;" style="width:100%; padding:5px; box-sizing:border-box;">
+                                
+                                <input type="text" value="${it.spec}" onchange="brands[${bi}].lenses[${li}].items[${ii}].spec=this.value;" style="width:100%; padding:5px; box-sizing:border-box;" placeholder="설계">
+                                
+                                <input type="text" value="${Number(it.pOff||0).toLocaleString()}" oninput="inputPriceFormat(this, (v) => brands[${bi}].lenses[${li}].items[${ii}].pOff = v)" style="width:100%; padding:5px; box-sizing:border-box;">
+                                
+                                <input type="text" value="${Number(it.pSale||0).toLocaleString()}" oninput="inputPriceFormat(this, (v) => brands[${bi}].lenses[${li}].items[${ii}].pSale = v)" style="width:100%; padding:5px; box-sizing:border-box;">
+                                
+                                <div style="font-size:0.72em; background:#f0f7ff; padding:4px; border-radius:8px; display:flex; align-items:center; gap:3px; border:1px solid #d1e3f8; box-sizing:border-box;">
+                                    <b style="color:#d63031;">S+</b><input type="number" step="0.25" value="${it.sMax}" style="width:38px; font-weight:bold; padding:2px;" onchange="brands[${bi}].lenses[${li}].items[${ii}].sMax=parseFloat(this.value)">
+                                    ~<input type="number" step="0.25" value="${it.sMin}" style="width:38px; padding:2px;" onchange="brands[${bi}].lenses[${li}].items[${ii}].sMin=parseFloat(this.value)">
+                                    <b style="color:#0984e3;">C</b><input type="number" step="0.25" value="${it.cMin||0}" style="width:38px; padding:2px;" onchange="brands[${bi}].lenses[${li}].items[${ii}].cMin=parseFloat(this.value)">
+                                    <span style="color:#ccc;">|</span>
+                                    <b style="color:#f39c12;">∑</b><input type="number" step="0.25" value="${it.sumMax||0}" style="width:38px; background:#fffbe6; border:1px solid #ffe066; font-weight:bold; padding:2px;" onchange="brands[${bi}].lenses[${li}].items[${ii}].sumMax=parseFloat(this.value)">
+                                </div>
+                                
+                                <button onclick="brands[${bi}].lenses[${li}].items.splice(${ii},1); renderAdmin();">×</button>
+                            </div>
+                        `).join('')}
+                                    <button class="btn-small" style="background:var(--accent); padding:8px 15px;" 
+                                        onclick="const nextIdx = getNextIndexValue(brands[${bi}].lenses[${li}].items); 
+                                                brands[${bi}].lenses[${li}].items.push({idx: nextIdx, spec:'', pOff:'0', pSale:'0', sMin:-10, sMax:6, cMin:-4, sumMax:0}); 
+                                                renderAdmin();">+ 사양 추가</button>
                         </div>`).join('')}
                     <button class="btn-ui" style="background:var(--success); width:100%; margin-top:15px; padding:15px;" onclick="addNewLens(${bi})">+ 새 제품 카드 추가</button>
                 </div>
@@ -594,12 +720,30 @@
         document.getElementById('m-header').innerHTML = h + `<th onclick="saveMEState(); editingMatrix.cols.push({name:'', desc:'', addInfo:'', corridor:'', bgColor:'#fdfdfd', prices:{}}); updateMEUI();" style="cursor:pointer; background:var(--accent); color:white;">+ 추가</th></tr>`;
         
         let b = '';
+
         fixedIndices.forEach(idx => {
             b += `<tr><td class="idx-col">${idx}</td>`;
             editingMatrix.cols.forEach((c, i) => {
-                const sk = 'idx_'+idx.replace('.','');
-                const p = (c.prices && c.prices[sk]) || {off:'', sale:''};
-                b += `<td><input id="p-o-${idx}-${i}" value="${p.off}" placeholder="정가" style="width:80%; margin-bottom:4px; padding:5px; border-radius:4px; border:1px solid #eee;"><br><input id="p-s-${idx}-${i}" value="${p.sale}" placeholder="판매가" style="width:80%; padding:5px; border-radius:4px; border:1px solid #eee;"></td>`;
+                const sk = 'idx_' + idx.replace('.', '');
+                const p = (c.prices && c.prices[sk]) || { off: '', sale: '' };
+                
+                // 데이터에 혹시 쉼표가 섞여있어도 숫자로만 깔끔하게 정리합니다.
+                const displayOff = String(p.off || "").replace(/[^0-9]/g, "");
+                const displaySale = String(p.sale || "").replace(/[^0-9]/g, "");
+
+                b += `<td>
+                    <input id="p-o-${idx}-${i}" 
+                        value="${displayOff ? Number(displayOff).toLocaleString() : ''}" 
+                        placeholder="정가" 
+                        oninput="inputPriceFormat(this, (v) => { if(!editingMatrix.cols[${i}].prices) editingMatrix.cols[${i}].prices={}; if(!editingMatrix.cols[${i}].prices['${sk}']) editingMatrix.cols[${i}].prices['${sk}']={}; editingMatrix.cols[${i}].prices['${sk}'].off = v; })" 
+                        style="width:85%; margin-bottom:4px; padding:6px; border-radius:4px; border:1px solid #eee; text-align:right;">
+                    <br>
+                    <input id="p-s-${idx}-${i}" 
+                        value="${displaySale ? Number(displaySale).toLocaleString() : ''}" 
+                        placeholder="판매가" 
+                        oninput="inputPriceFormat(this, (v) => { if(!editingMatrix.cols[${i}].prices) editingMatrix.cols[${i}].prices={}; if(!editingMatrix.cols[${i}].prices['${sk}']) editingMatrix.cols[${i}].prices['${sk}']={}; editingMatrix.cols[${i}].prices['${sk}'].sale = v; })" 
+                        style="width:85%; padding:6px; border-radius:4px; border:1px solid #eee; text-align:right; font-weight:bold; color:var(--sale);">
+                </td>`;
             });
             b += `<td></td></tr>`;
         });
@@ -622,7 +766,10 @@
             c.isSale = document.getElementById(`col-s-${i}`).checked;
             fixedIndices.forEach(idx => {
                 const sk = 'idx_'+idx.replace('.','');
-                c.prices[sk] = { off: document.getElementById(`p-o-${idx}-${i}`).value, sale: document.getElementById(`p-s-${idx}-${i}`).value };
+                const rawOff = document.getElementById(`p-o-${idx}-${i}`).value.replace(/,/g, "");
+                const rawSale = document.getElementById(`p-s-${idx}-${i}`).value.replace(/,/g, "");
+            if(!c.prices) c.prices = {};
+            c.prices[sk] = { off: rawOff, sale: rawSale };
             });
         });
     }
@@ -635,6 +782,18 @@
         document.getElementById('matrix-editor').style.display = 'none'; 
         renderSavedMatrices();
         renderApp();
+    }
+
+    // 숫자를 입력하면 실시간으로 쉼표를 찍어주는 함수
+    function inputPriceFormat(input, callback) {
+        let val = input.value.replace(/,/g, ""); // 기존 쉼표 제거
+        if (isNaN(val)) val = ""; // 숫자가 아니면 삭제
+        
+        // 데이터 저장용 (숫자만)
+        callback(val); 
+        
+        // 화면 표시용 (쉼표 추가)
+        input.value = val.replace(/\B(?=(\d{3})+(?!\d))/g, ","); 
     }
 
     // [기타 기능들]
