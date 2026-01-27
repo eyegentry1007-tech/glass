@@ -220,6 +220,11 @@
 
     <div style="display:grid; grid-template-columns: 1fr 1.5fr; gap:30px;">
         <div>
+            <div class="admin-section" style="background:#fff9f0;">
+                <h4>🔢 탭 노출 순서 관리</h4>
+                <div id="admin-tab-order-list" style="display:flex; flex-wrap:wrap; gap:10px;"></div>
+            </div>
+
             <div class="admin-section">
                 <h4>📂 탭 명칭 및 하단 이미지 관리</h4>
                 <div id="admin-tab-list" style="max-height: 300px; overflow-y: auto; margin-bottom:15px;"></div>
@@ -234,24 +239,19 @@
         </div>
 
         <div>
-            <div class="admin-section" style="background:#fff9f0;">
-                <h4>🔢 탭 노출 순서 관리</h4>
-                <div id="admin-tab-order-list" style="display:flex; flex-wrap:wrap; gap:10px;"></div>
-            </div>
-
             <div class="admin-section" style="border: 2px solid var(--accent);">
                 <h4>🔢 [통합] 해당 탭 내 제품 노출 순서 관리 
                     <select id="admin-order-tab-select" onchange="adminSelectedTabId = this.value; renderAdmin();" style="padding:10px; border-radius:8px; width:200px;"></select>
                 </h4>
                 <div id="admin-unified-order-list" style="max-height: 600px; overflow-y: auto;"></div>
             </div>
+            
+            <div class="admin-section">
+                <h4>📦 일반 브랜드별 제품 상세 설정 (SALE 배지, 도수범위 등)</h4>
+                <div id="admin-brands-list"></div>
+                <button class="btn-ui" style="background:var(--accent); margin-top:20px; width:100%; padding:15px;" onclick="addNewBrand()">+ 새 브랜드 추가</button>
+            </div>
         </div>
-    </div>
-
-    <div class="admin-section">
-        <h4>📦 일반 브랜드별 제품 상세 설정 (SALE 배지, 도수범위 등)</h4>
-        <div id="admin-brands-list"></div>
-        <button class="btn-ui" style="background:var(--accent); margin-top:20px; width:100%; padding:15px;" onclick="addNewBrand()">+ 새 브랜드 추가</button>
     </div>
 </div>
 
@@ -550,7 +550,7 @@
                 <span style="font-size:0.85em;">[${item.type}] <b>${item.b}</b> ${item.name}</span>
             </div>`).join('');
 
-        // 5. 브랜드 상세 상세 설정
+        // 5. 브랜드 상세 상세 설정 (SALE 배지, 도수범위 등)
         let bHtml = '';
         brands.forEach((b, bi) => {
             const active = openBrandIndex === bi;
@@ -562,46 +562,47 @@
                 <div style="display:${active?'block':'none'}; margin-top:15px; border-top:1px solid #ddd; padding-top:15px;">
                     브랜드명: <input type="text" value="${b.name}" onchange="brands[${bi}].name=this.value;" style="padding:8px;">
                     <button class="btn-small" style="background:var(--danger); float:right;" onclick="brands.splice(${bi},1); renderAdmin();">브랜드 삭제</button>
+                    
                     ${b.lenses.map((l, li) => `
                         <div style="background:white; padding:15px; border-radius:12px; margin-top:15px; border:1px solid #eee;">
                             <div style="display:flex; gap:10px; align-items:center; margin-bottom:12px;">
-                                <button class="btn-small" onclick="moveItem(brands[${bi}].lenses, ${li}, -1);">▲</button><button class="btn-small" onclick="moveItem(brands[${bi}].lenses, ${li}, 1);">▼</button>
+                                <button class="btn-small" onclick="moveItem(brands[${bi}].lenses, ${li}, -1);">▲</button>
+                                <button class="btn-small" onclick="moveItem(brands[${bi}].lenses, ${li}, 1);">▼</button>
                                 🛡️ <input type="text" value="${l.name}" onchange="brands[${bi}].lenses[${li}].name=this.value;" style="flex:1; padding:8px;">
                                 <input type="color" value="${l.bgColor||'#2c3e50'}" onchange="brands[${bi}].lenses[${li}].bgColor=this.value;">
                                 <label style="font-size:0.8em; color:var(--danger); font-weight:bold;"><input type="checkbox" ${l.isSale?'checked':''} onchange="brands[${bi}].lenses[${li}].isSale=this.checked;"> SALE</label>
-                                <select onchange="brands[${bi}].lenses[${li}].tabId=this.value; renderAdmin();"><option value="">탭 미지정</option>${categories.map(c => `<option value="${c.id}" ${l.tabId===c.id?'selected':''}>${c.name}</option>`).join('')}</select>
+                                <select onchange="brands[${bi}].lenses[${li}].tabId=this.value; renderAdmin();">
+                                    <option value="">탭 미지정</option>
+                                    ${categories.map(c => `<option value="${c.id}" ${l.tabId===c.id?'selected':''}>${c.name}</option>`).join('')}
+                                </select>
                                 <button onclick="brands[${bi}].lenses.splice(${li},1); renderAdmin();">×</button>
                             </div>
                             <input type="text" value="${l.desc||''}" onchange="brands[${bi}].lenses[${li}].desc=this.value;" placeholder="한줄 설명" style="width:100%; margin-bottom:10px; padding:8px;">
+                            
                             <div style="font-size:0.85em; margin-bottom:12px; background:#f9f9f9; padding:10px; border-radius:8px;">
                                 연령: ${['student','adult','senior'].map(a => `<label style="margin-right:10px;"><input type="checkbox" ${l.targetAges?.includes(a)?'checked':''} onchange="toggleT(${bi},${li},'age','${a}')"> ${a}</label>`).join('')} | 
                                 증상: ${issues.map(is => `<label style="margin-right:10px;"><input type="checkbox" ${l.targetIssues?.includes(is.id)?'checked':''} onchange="toggleT(${bi},${li},'issue','${is.id}')"> ${is.name}</label>`).join('')}
                             </div>
-                        ${l.items.map((it, ii) => `
-                            <div style="display:grid; grid-template-columns: 60px 160px 85px 85px 240px 45px; gap:5px; margin-bottom:8px; align-items:center;">
-                                <input type="text" value="${it.idx}" onchange="brands[${bi}].lenses[${li}].items[${ii}].idx=this.value;" style="width:100%; padding:5px; box-sizing:border-box;">
-                                
-                                <input type="text" value="${it.spec}" onchange="brands[${bi}].lenses[${li}].items[${ii}].spec=this.value;" style="width:100%; padding:5px; box-sizing:border-box;" placeholder="설계">
-                                
-                                <input type="text" value="${Number(it.pOff||0).toLocaleString()}" oninput="inputPriceFormat(this, (v) => brands[${bi}].lenses[${li}].items[${ii}].pOff = v)" style="width:100%; padding:5px; box-sizing:border-box;">
-                                
-                                <input type="text" value="${Number(it.pSale||0).toLocaleString()}" oninput="inputPriceFormat(this, (v) => brands[${bi}].lenses[${li}].items[${ii}].pSale = v)" style="width:100%; padding:5px; box-sizing:border-box;">
-                                
-                                <div style="font-size:0.72em; background:#f0f7ff; padding:4px; border-radius:8px; display:flex; align-items:center; gap:3px; border:1px solid #d1e3f8; box-sizing:border-box;">
-                                    <b style="color:#d63031;">S+</b><input type="number" step="0.25" value="${it.sMax}" style="width:38px; font-weight:bold; padding:2px;" onchange="brands[${bi}].lenses[${li}].items[${ii}].sMax=parseFloat(this.value)">
-                                    ~<input type="number" step="0.25" value="${it.sMin}" style="width:38px; padding:2px;" onchange="brands[${bi}].lenses[${li}].items[${ii}].sMin=parseFloat(this.value)">
-                                    <b style="color:#0984e3;">C</b><input type="number" step="0.25" value="${it.cMin||0}" style="width:38px; padding:2px;" onchange="brands[${bi}].lenses[${li}].items[${ii}].cMin=parseFloat(this.value)">
-                                    <span style="color:#ccc;">|</span>
-                                    <b style="color:#f39c12;">∑</b><input type="number" step="0.25" value="${it.sumMax||0}" style="width:38px; background:#fffbe6; border:1px solid #ffe066; font-weight:bold; padding:2px;" onchange="brands[${bi}].lenses[${li}].items[${ii}].sumMax=parseFloat(this.value)">
+
+                            ${l.items.map((it, ii) => `
+                                <div style="display:grid; grid-template-columns: 60px 150px 80px 80px 245px 40px; gap:8px; margin-bottom:8px; align-items:center;">
+                                    <input type="text" value="${it.idx}" onchange="brands[${bi}].lenses[${li}].items[${ii}].idx=this.value;" style="width:100%; padding:5px; box-sizing:border-box;">
+                                    <input type="text" value="${it.spec}" onchange="brands[${bi}].lenses[${li}].items[${ii}].spec=this.value;" style="width:100%; padding:5px; box-sizing:border-box;" placeholder="설계">
+                                    <input type="text" value="${Number(it.pOff||0).toLocaleString()}" oninput="inputPriceFormat(this, (v) => brands[${bi}].lenses[${li}].items[${ii}].pOff = v)" style="width:100%; padding:5px; box-sizing:border-box;">
+                                    <input type="text" value="${Number(it.pSale||0).toLocaleString()}" oninput="inputPriceFormat(this, (v) => brands[${bi}].lenses[${li}].items[${ii}].pSale = v)" style="width:100%; padding:5px; box-sizing:border-box;">
+                                    
+                                    <div style="font-size:0.72em; background:#f0f7ff; padding:5px; border-radius:8px; display:flex; align-items:center; gap:4px; border:1px solid #d1e3f8; box-sizing:border-box;">
+                                        <b style="color:#d63031;">S+</b><input type="number" step="0.25" value="${it.sMax}" style="width:38px; font-weight:bold; padding:2px;" onchange="brands[${bi}].lenses[${li}].items[${ii}].sMax=parseFloat(this.value)">
+                                        ~<input type="number" step="0.25" value="${it.sMin}" style="width:38px; padding:2px;" onchange="brands[${bi}].lenses[${li}].items[${ii}].sMin=parseFloat(this.value)">
+                                        <b style="color:#0984e3;">C</b><input type="number" step="0.25" value="${it.cMin||0}" style="width:38px; padding:2px;" onchange="brands[${bi}].lenses[${li}].items[${ii}].cMin=parseFloat(this.value)">
+                                        <span style="color:#ccc; margin:0 2px;">|</span>
+                                        <b style="color:#f39c12;">∑</b><input type="number" step="0.25" value="${it.sumMax||0}" style="width:38px; background:#fffbe6; border:1px solid #ffe066; font-weight:bold; padding:2px;" onchange="brands[${bi}].lenses[${li}].items[${ii}].sumMax=parseFloat(this.value)">
+                                    </div>
+                                    <button class="btn-small" style="background:#95a5a6; width:30px; height:30px; padding:0;" onclick="brands[${bi}].lenses[${li}].items.splice(${ii},1); renderAdmin();">×</button>
                                 </div>
-                                
-                                <button onclick="brands[${bi}].lenses[${li}].items.splice(${ii},1); renderAdmin();">×</button>
-                            </div>
-                        `).join('')}
-                                    <button class="btn-small" style="background:var(--accent); padding:8px 15px;" 
-                                        onclick="const nextIdx = getNextIndexValue(brands[${bi}].lenses[${li}].items); 
-                                                brands[${bi}].lenses[${li}].items.push({idx: nextIdx, spec:'', pOff:'0', pSale:'0', sMin:-10, sMax:6, cMin:-4, sumMax:0}); 
-                                                renderAdmin();">+ 사양 추가</button>
+                            `).join('')}
+                            <button class="btn-small" style="background:var(--accent); padding:10px 20px; margin-top:10px;" 
+                                onclick="const nextIdx = getNextIndexValue(brands[${bi}].lenses[${li}].items); brands[${bi}].lenses[${li}].items.push({idx: nextIdx, spec:'', pOff:'0', pSale:'0', sMin:-10, sMax:6, cMin:-4, sumMax:0}); renderAdmin();">+ 사양 추가</button>
                         </div>`).join('')}
                     <button class="btn-ui" style="background:var(--success); width:100%; margin-top:15px; padding:15px;" onclick="addNewLens(${bi})">+ 새 제품 카드 추가</button>
                 </div>
