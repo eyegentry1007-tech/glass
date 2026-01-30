@@ -47,15 +47,15 @@
         /* 매트릭스 & 카드 */
         .matrix-container {
         grid-column: 1 / -1;   /* 이 줄을 추가하면 좌우로 꽉 차게 됩니다 */
-        margin-bottom: 10px;   /* 40에서 10으로 줄여서 아래 간격을 좁힙니다 */
+        margin-bottom: 40px;   /* 40에서 10으로 줄여서 아래 간격을 좁힙니다 */
         border-radius: 15px; 
         border: 1px solid #e0e0e0; 
         overflow: hidden; 
         box-shadow: 0 10px 30px rgba(0,0,0,0.05);
         }
-        .matrix-title { padding: 18px 25px; font-size: 1.25em; font-weight: bold; color: white; }
+        .matrix-title { padding: 10px 25px; font-size: 1.2em; font-weight: bold; color: white; }
         .matrix-table { width: 100%; border-collapse: collapse; text-align: center; }
-        .matrix-table th { padding: 20px 15px; background: #fdfdfd; border-bottom: 2px solid #eee; }
+        .matrix-table th { padding: 10px 15px; background: #fdfdfd; border-bottom: 2px solid #eee; }
         .idx-col { background: #f8f9fa; font-weight: bold; width: 85px; color: #666; font-size: 1.05em; border-right: 1px solid #eee; }
         .card-grid {
             display: grid !important; 
@@ -175,6 +175,7 @@
     <header>
         <div class="logo-area"><h2>아이젠트리 충남도청점</h2><span style="font-size:0.8em; opacity:0.7; margin-left:10px;">V1.1 MASTER</span></div>
         <div class="top-controls">
+            <button id="fullscreen-btn" class="btn-ui" style="background:#2ecc71;" onclick="toggleFullScreen()">📺 전체화면</button>
             <button id="filter-toggle-btn" class="btn-ui" style="background:#95a5a6;" onclick="togglePowerFilter()">🔍 도수 적용 안함</button>
             <div class="control-group">
                 <div onclick="openGeneralPicker('age')"><div class="label-text">대상 선택</div><div id="disp-age" class="power-box-btn">성인</div></div>
@@ -245,7 +246,14 @@
                 </h4>
                 <div id="admin-unified-order-list" style="max-height: 600px; overflow-y: auto;"></div>
             </div>
-            
+        
+            <div class="admin-section" style="background:#f0f7ff; border: 2px solid var(--accent);">
+                <h4>🖼️ 홍보 이미지 카드 관리 (이름/주소 수정)</h4>
+                <div id="admin-image-list" style="max-height: 400px; overflow-y: auto; margin-bottom:15px;"></div>
+                
+                <button class="btn-ui" style="background:var(--accent); width:100%; padding:15px;" onclick="addNewImageCard()">+ 새 홍보 이미지 카드 추가</button>
+            </div>
+
             <div class="admin-section">
                 <h4>📦 일반 브랜드별 제품 상세 설정 (SALE 배지, 도수범위 등)</h4>
                 <div id="admin-brands-list"></div>
@@ -320,22 +328,40 @@
     }
 
     // [전역 변수]
-    let categories = [{id:'ai', name:'✨ AI 추천'}], brands = [], issues = [{id:'none', name:'없음'}], matrices = [];
-    let openMatrixIndex = null; // 아코디언 열림 상태 저장용
-    let currentTabId = 'ai', adminSelectedTabId = 't1', userPower = {rs:0, rc:0, ls:0, lc:0};
+    let categories = [{id:'ai', name:'✨ AI 추천'}], 
+        brands = [], 
+        issues = [{id:'none', name:'없음'}], 
+        matrices = [], 
+        images = []; // 이미지 보관함 추가
+
+    let openMatrixIndex = null; 
+    let currentTabId = 'ai';
+    let adminSelectedTabId = ''; // 에러의 원인이었던 변수를 위로 올렸습니다.
+    let userPower = {rs:0, rc:0, ls:0, lc:0};
     let selectedAge = 'adult', selectedIssue = 'none', isFilterActive = false, openBrandIndex = null, editingMatrix = null;
     const fixedIndices = ['1.56', '1.60', '1.67', '1.74'];
 
-    // [서버 연결]
+    // 2. 서버에서 데이터를 가져오는 함수
     function loadDataFromServer() {
         db.ref('lensData').on('value', (snap) => {
             const data = snap.val();
             if(data) {
-                categories = data.categories || categories;
-                brands = data.brands || [];
-                issues = data.issues || issues;
-                matrices = data.matrices || [];
-                renderApp();
+            categories = data.categories || categories;
+            brands = data.brands || [];
+            issues = data.issues || issues;
+            matrices = data.matrices || [];
+            
+            // [중요] images가 null이거나 객체면 빈 배열([])로 초기화
+            images = Array.isArray(data.images) ? data.images : [];
+            window.images = images; // 전역 참조 연결
+                
+                // [수정] 데이터를 불러올 때 관리자용 선택 탭을 실제 존재하는 첫 번째 탭 ID로 자동 설정
+                const firstRealTab = categories.find(c => c.id !== 'ai');
+                if (firstRealTab && (!adminSelectedTabId || !categories.find(c => c.id === adminSelectedTabId))) {
+                    adminSelectedTabId = firstRealTab.id;
+                }
+
+                renderApp(); 
                 if(document.getElementById('admin-panel').style.display === 'block') renderAdmin();
             }
         });
@@ -371,34 +397,74 @@
     // [메인 화면 렌더링]
     function renderApp() {
         const sortedCats = [...categories];
+        // 상단 탭 메뉴 그리기
         document.getElementById('tab-nav').innerHTML = sortedCats.map(c => `<div class="tab ${currentTabId===c.id?'active':''}" onclick="currentTabId='${c.id}'; renderApp();">${c.name}</div>`).join('');
         
         let pool = [];
+        // 1. 일반 렌즈 데이터를 모음
         brands.forEach(b => b.lenses.forEach(l => {
-            const mTab = (currentTabId === l.tabId);
-            const mAI = (currentTabId === 'ai' && l.tabId && l.targetIssues?.includes(selectedIssue) && l.targetAges?.includes(selectedAge));
-            if(mTab || mAI) pool.push({...l, type:'normal', brandName: b.name});
+            if(currentTabId === l.tabId || (currentTabId === 'ai' && l.targetIssues?.includes(selectedIssue) && l.targetAges?.includes(selectedAge))) {
+                pool.push({...l, type:'normal', brandName: b.name});
+            }
         }));
+
+        // 2. 매트릭스 데이터를 모음
         matrices.forEach(m => {
-            const mTab = (currentTabId === m.tabId);
-            const mAI = (currentTabId === 'ai' && m.tabId && m.targetIssues?.includes(selectedIssue) && m.targetAges?.includes(selectedAge));
-            if(mTab || mAI) pool.push({...m, type:'matrix'});
+            if(currentTabId === m.tabId || (currentTabId === 'ai' && m.targetIssues?.includes(selectedIssue) && m.targetAges?.includes(selectedAge))) {
+                pool.push({...m, type:'matrix'});
+            }
         });
+
+        if (Array.isArray(images)) {
+            images.forEach(img => {
+                // 현재 보고 있는 탭과 이미지에 설정된 탭이 같을 때만 pool에 넣음
+                if(currentTabId === img.tabId) {
+                    pool.push({...img, type:'imageCard'}); // type을 imageCard로 명시
+                }
+            });
+        }
+
+        // 3. 홍보 이미지 데이터를 모음
+        images.forEach(img => { 
+            // 이미지의 tabId와 현재 관리자 창에서 선택한 탭Id가 같을 때만 목록에 추가합니다.
+            if(img && img.tabId === adminSelectedTabId) {
+                pool.push({
+                    id: img, 
+                    name: img.name || '새 홍보 이미지', 
+                    b: '[이미지]', 
+                    type: '광고'
+                }); 
+            }
+        });
+        
+        // 정해진 순서(order)대로 정렬
         pool.sort((a,b) => (a.order || 999) - (b.order || 999));
 
+        // 화면에 카드들을 그림
         let html = '<div class="card-grid">';
         pool.forEach(item => {
             if(item.type === 'matrix') html += renderMatrixHtml(item);
+            else if(item.type === 'imageCard') html += renderImageCardHtml(item); // 이미지 전용
             else html += renderNormalHtml(item);
         });
         
+        // 탭 하단 배너 처리
         const curCat = categories.find(c => c.id === currentTabId);
         let banner = (curCat && curCat.img) ? `<img src="${curCat.img}" style="width:100%; max-width:100%; display:block; margin:5px 0; border-radius:15px; box-shadow:0 10px 30px rgba(0,0,0,0.1);">` : '';
         document.getElementById('main-display').innerHTML = html + '</div>' + banner;
     }
 
+    function renderImageCardHtml(img) {
+        return `
+        <div class="image-card" style="grid-column: span 1; border-radius:15px; overflow:hidden; box-shadow:0 5px 20px rgba(0,0,0,0.05); background:white;">
+            <img src="${img.url}" style="width:100%; display:block; object-fit:contain;">
+        </div>`;
+    }
+
     /* --- 2번 단계 최종 교체 코드 --- */
     function renderNormalHtml(l) {
+        if (!l.items || !Array.isArray(l.items)) return '';
+
         let rows = ''; 
         let match = false;
         
@@ -442,7 +508,7 @@
             </tr>`;
         });
 
-        if(!match && (userPower.rs !== 0 || userPower.ls !== 0)) return '';
+        if(isFilterActive && !match && (userPower.rs !== 0 || userPower.ls !== 0)) return '';
 
         const bgColor = l.bgColor || '#2c3e50';
         const textColor = getContrastColor(bgColor);
@@ -507,7 +573,7 @@
                         <div style="font-size:0.8em; color:#bbb; text-decoration:line-through;">
                             ${cleanOff > 0 ? cleanOff.toLocaleString() + '원' : ''}
                         </div>
-                        <div style="font-weight:900; font-size:1.05em;">
+                        <div style="font-weight:900; font-size:1.2em;">
                             ${cleanSale > 0 ? cleanSale.toLocaleString() + '원' : '-'}
                         </div>
                     </td>`;
@@ -519,98 +585,157 @@
 
     // [관리자 설정 렌더링]
     function renderAdmin() {
-        // 1. 탭 및 이미지
-        document.getElementById('admin-tab-list').innerHTML = categories.map((c, idx) => `
-            <div class="tag-row" style="flex-direction:column; align-items:stretch;">
-                <div style="display:flex; justify-content:space-between;"><b>${c.name}</b> <button class="btn-small" style="background:var(--danger)" onclick="categories.splice(${idx},1); renderAdmin();">삭제</button></div>
-                <input type="text" placeholder="하단 이미지 URL" value="${c.img||''}" onchange="categories[${idx}].img=this.value" style="margin-top:5px; padding:8px; border-radius:5px; border:1px solid #ddd;">
-            </div>`).join('');
+            if (!Array.isArray(images)) {
+            images = [];
+            }
 
-        // 2. 탭 순서
-        document.getElementById('admin-tab-order-list').innerHTML = categories.map((c, idx) => `
-            <div class="tag-row" style="background:white; border:1px solid #ddd;">
-                <button class="btn-small" onclick="moveItem(categories, ${idx}, -1)">◀</button>
-                <b style="font-size:0.9em;">${c.name}</b>
-                <button class="btn-small" onclick="moveItem(categories, ${idx}, 1)">▶</button>
-            </div>`).join('');
+            // 1. 📂 탭 명칭 및 하단 이미지 관리
+            document.getElementById('admin-tab-list').innerHTML = categories.map((c, idx) => `
+                <div class="tag-row" style="flex-direction:column; align-items:stretch;">
+                    <div style="display:flex; gap:10px; align-items:center;">
+                        <input type="text" value="${c.name}" onchange="categories[${idx}].name=this.value; renderApp();" style="flex:1; padding:10px; border-radius:8px; border:1px solid #ddd; font-weight:bold;">
+                        <button class="btn-small" style="background:var(--danger); padding:10px 15px;" onclick="if(confirm('이 탭을 삭제하시겠습니까?')){categories.splice(${idx},1); renderAdmin(); renderApp();}">삭제</button>
+                    </div>
+                    <input type="text" placeholder="하단 이미지 URL" value="${c.img||''}" onchange="categories[${idx}].img=this.value; renderApp();" style="margin-top:8px; padding:10px; border-radius:8px; border:1px solid #ddd;">
+                </div>`).join('');
 
-        // 3. 증상 관리
-        document.getElementById('admin-issue-list').innerHTML = issues.map((is, idx) => `
-            <div class="tag-row"><span>${is.name}</span><button class="btn-small" onclick="issues.splice(${idx},1); renderAdmin();">×</button></div>`).join('');
+            // 2. 🔢 탭 노출 순서 관리
+            document.getElementById('admin-tab-order-list').innerHTML = categories.map((c, idx) => `
+                <div class="tag-row" style="background:white; border:1px solid #ddd;">
+                    <button class="btn-small" onclick="moveItem(categories, ${idx}, -1)">◀</button>
+                    <b style="font-size:0.9em;">${c.name}</b>
+                    <button class="btn-small" onclick="moveItem(categories, ${idx}, 1)">▶</button>
+                </div>`).join('');
 
-        // 4. 통합 출력 순서
-        let pool = [];
-        brands.forEach(b => b.lenses.forEach(l => { if(l.tabId === adminSelectedTabId) pool.push({id:l, name:l.name, b:b.name, type:'일반'}); }));
-        matrices.forEach(m => { if(m.tabId === adminSelectedTabId) pool.push({id:m, name:m.name, b:m.brand, type:'매트릭스'}); });
-        pool.sort((a,b) => (a.id.order || 999) - (b.id.order || 999));
-        document.getElementById('admin-unified-order-list').innerHTML = pool.map((item, idx) => `
-            <div class="tag-row">
-                <button class="btn-small" onclick="moveUnified(${idx}, -1)">▲</button>
-                <button class="btn-small" onclick="moveUnified(${idx}, 1)">▼</button>
-                <span style="font-size:0.85em;">[${item.type}] <b>${item.b}</b> ${item.name}</span>
-            </div>`).join('');
+            // 3. ❓ 불편 증상 항목 관리
+            document.getElementById('admin-issue-list').innerHTML = issues.map((is, idx) => `
+                <div class="tag-row"><span>${is.name}</span><button class="btn-small" onclick="issues.splice(${idx},1); renderAdmin();">×</button></div>`).join('');
 
-        // 5. 브랜드 상세 상세 설정 (SALE 배지, 도수범위 등)
-        let bHtml = '';
-        brands.forEach((b, bi) => {
-            const active = openBrandIndex === bi;
-            bHtml += `<div class="admin-section" style="padding:15px; background:${active?'#fff':'#f8f9fa'}">
-                <div style="cursor:pointer; display:flex; justify-content:space-between; align-items:center;" onclick="openBrandIndex=${active?null:bi}; renderAdmin();">
-                    <b style="font-size:1.1em;">${b.name} (${b.lenses.length})</b>
-                    <span>${active?'▼':'▶'}</span>
-                </div>
-                <div style="display:${active?'block':'none'}; margin-top:15px; border-top:1px solid #ddd; padding-top:15px;">
-                    브랜드명: <input type="text" value="${b.name}" onchange="brands[${bi}].name=this.value;" style="padding:8px;">
-                    <button class="btn-small" style="background:var(--danger); float:right;" onclick="brands.splice(${bi},1); renderAdmin();">브랜드 삭제</button>
+            // 4. 🔢 [통합] 해당 탭 내 제품 노출 순서 관리 (버그 수정: 중복 제거 및 이름 연동)
+            let pool = [];
+            brands.forEach(b => b.lenses.forEach(l => { if(l.tabId === adminSelectedTabId) pool.push({id:l, name:l.name, b:b.name, type:'일반'}); }));
+            matrices.forEach(m => { if(m.tabId === adminSelectedTabId) pool.push({id:m, name:m.name, b:m.brand, type:'매트릭스'}); });
+            // 사장님이 지으신 이름(img.name)이 목록에 바로 나오도록 수정했습니다.
+            
+            if (Array.isArray(images)) {
+                images.forEach(img => {
+                    if(img.tabId === adminSelectedTabId) pool.push({id:img, name:img.name, b:'[이미지]', type:'홍보광고'});
+                });
+            }
+
+            pool.sort((a,b) => (a.id.order || 999) - (b.id.order || 999));
+            document.getElementById('admin-unified-order-list').innerHTML = pool.map((item, idx) => `
+                <div class="tag-row">
+                    <button class="btn-small" onclick="moveUnified(${idx}, -1)">▲</button>
+                    <button class="btn-small" onclick="moveUnified(${idx}, 1)">▼</button>
+                    <span style="font-size:0.85em;">[${item.type}] <b>${item.b}</b> ${item.name}</span>
+                </div>`).join('');
+
+            // 6. 🖼️ 홍보 이미지 카드 관리 (window 참조 방식으로 에러 완벽 차단)
+            document.getElementById('admin-image-list').innerHTML = (window.images && window.images.length) ? window.images.map((img) => {
+                if (!img.id) img.id = 'img_' + Date.now() + Math.random();
+                
+                return `
+                <div class="tag-row" style="flex-direction:column; align-items:stretch; background:white; border:1px solid #d1e3f8; margin-bottom:15px; padding:15px; border-radius:12px;">
+                    <div style="display:flex; gap:10px; align-items:center; margin-bottom:10px;">
+                        <span style="font-size:1.2em;">🖼️</span>
+                        <input type="text" value="${img.name || ''}" 
+                            oninput="const target = window.images.find(x => x.id === '${img.id}'); if(target) target.name = this.value;" 
+                            style="flex:1; padding:10px; border-radius:8px; border:1px solid #ddd; font-weight:bold;" placeholder="이미지 이름">
+                        
+                        <button class="btn-small" style="background:var(--danger); padding:10px 15px;" 
+                                onclick="if(confirm('삭제하시겠습니까?')){ const dIdx = window.images.findIndex(x => x.id === '${img.id}'); if(dIdx > -1) window.images.splice(dIdx, 1); renderAdmin(); renderApp(); }">삭제</button>
+                    </div>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                        <div>
+                            <div style="font-size:0.75em; color:#888; margin-bottom:3px;">출력될 탭 선택</div>
+                            <select onchange="const target = window.images.find(x => x.id === '${img.id}'); if(target) target.tabId = this.value; renderAdmin(); renderApp();" 
+                                    style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd; background:#f9f9f9;">
+                                <option value="">탭 미지정</option>
+                                ${categories.map(c => `<option value="${c.id}" ${img.tabId === c.id ? 'selected' : ''}>${c.name}</option>`).join('')}
+                            </select>
+                        </div>
+                        <div>
+                            <div style="font-size:0.75em; color:#888; margin-bottom:3px;">이미지 주소(URL)</div>
+                            <input type="text" value="${img.url || ''}" 
+                                oninput="const target = window.images.find(x => x.id === '${img.id}'); if(target) target.url = this.value;" 
+                                style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd;" placeholder="https://...">
+                        </div>
+                    </div>
+                </div>`;
+            }).join('') : '<p style="text-align:center; color:#999; padding:20px;">등록된 이미지가 없습니다.</p>';
+
+            // 5. 📦 일반 브랜드별 제품 상세 설정
+            let bHtml = '';
+            brands.forEach((b, bi) => {
+                const active = openBrandIndex === bi;
+                // 안전한 배경색 처리
+                const safeBrandColor = (b.bgColor && String(b.bgColor).startsWith('#')) ? b.bgColor : '#2c3e50';
+
+                bHtml += `<div class="admin-section" style="padding:15px; background:${active?'#fff':'#f8f9fa'}">
+                    <div style="cursor:pointer; display:flex; justify-content:space-between; align-items:center;" onclick="openBrandIndex=${active?null:bi}; renderAdmin();">
+                        <b style="font-size:1.1em;">${b.name} (${b.lenses ? b.lenses.length : 0})</b>
+                        <span>${active?'▼':'▶'}</span>
+                    </div>
+                    <div style="display:${active?'block':'none'}; margin-top:15px; border-top:1px solid #ddd; padding-top:15px;">
+                        브랜드명: <input type="text" value="${b.name}" onchange="brands[${bi}].name=this.value;" style="padding:8px;">
+                        <button class="btn-small" style="background:var(--danger); float:right;" onclick="if(confirm('브랜드를 삭제하시겠습니까?')){brands.splice(${bi},1); renderAdmin();}">브랜드 삭제</button>
+                        
+            ${b.lenses ? b.lenses.map((l, li) => {
+                // 1. 여기서 색상 에러를 미리 방지합니다.
+                const safeLensColor = (l.bgColor && String(l.bgColor).startsWith('#')) ? l.bgColor : '#2c3e50';
+                
+                return `
+                <div style="background:white; padding:15px; border-radius:12px; margin-top:15px; border:1px solid #eee;">
+                    <div style="display:flex; gap:10px; align-items:center; margin-bottom:12px;">
+                        <button class="btn-small" onclick="moveItem(brands[${bi}].lenses, ${li}, -1);">▲</button>
+                        <button class="btn-small" onclick="moveItem(brands[${bi}].lenses, ${li}, 1);">▼</button>
+                        
+                        🛡️ <input type="text" value="${l.name}" oninput="brands[${bi}].lenses[${li}].name=this.value;" style="flex:1; padding:8px;">
+                        
+                        <input type="color" value="${safeLensColor}" onchange="brands[${bi}].lenses[${li}].bgColor=this.value; renderApp();">
+                        
+                        <label style="font-size:0.8em; color:var(--danger); font-weight:bold;">
+                            <input type="checkbox" ${l.isSale?'checked':''} onchange="brands[${bi}].lenses[${li}].isSale=this.checked; renderApp();"> SALE
+                        </label>
+                        
+                        <select onchange="brands[${bi}].lenses[${li}].tabId=this.value; renderAdmin();">
+                            <option value="">탭 미지정</option>
+                            ${categories.filter(c=>c.id!=='ai').map(c => `<option value="${c.id}" ${l.tabId===c.id?'selected':''}>${c.name}</option>`).join('')}
+                        </select>
+                        <button onclick="if(confirm('삭제하시겠습니까?')){brands[${bi}].lenses.splice(${li},1); renderAdmin();}">×</button>
+                    </div>
                     
-                    ${b.lenses.map((l, li) => `
-                        <div style="background:white; padding:15px; border-radius:12px; margin-top:15px; border:1px solid #eee;">
-                            <div style="display:flex; gap:10px; align-items:center; margin-bottom:12px;">
-                                <button class="btn-small" onclick="moveItem(brands[${bi}].lenses, ${li}, -1);">▲</button>
-                                <button class="btn-small" onclick="moveItem(brands[${bi}].lenses, ${li}, 1);">▼</button>
-                                🛡️ <input type="text" value="${l.name}" onchange="brands[${bi}].lenses[${li}].name=this.value;" style="flex:1; padding:8px;">
-                                <input type="color" value="${l.bgColor||'#2c3e50'}" onchange="brands[${bi}].lenses[${li}].bgColor=this.value;">
-                                <label style="font-size:0.8em; color:var(--danger); font-weight:bold;"><input type="checkbox" ${l.isSale?'checked':''} onchange="brands[${bi}].lenses[${li}].isSale=this.checked;"> SALE</label>
-                                <select onchange="brands[${bi}].lenses[${li}].tabId=this.value; renderAdmin();">
-                                    <option value="">탭 미지정</option>
-                                    ${categories.map(c => `<option value="${c.id}" ${l.tabId===c.id?'selected':''}>${c.name}</option>`).join('')}
-                                </select>
-                                <button onclick="brands[${bi}].lenses.splice(${li},1); renderAdmin();">×</button>
-                            </div>
-                            <input type="text" value="${l.desc||''}" onchange="brands[${bi}].lenses[${li}].desc=this.value;" placeholder="한줄 설명" style="width:100%; margin-bottom:10px; padding:8px;">
+                    <input type="text" value="${l.desc||''}" oninput="brands[${bi}].lenses[${li}].desc=this.value;" placeholder="한줄 설명" style="width:100%; margin-bottom:10px; padding:8px;">
+                    
+                    ${l.items ? l.items.map((it, ii) => `
+                        <div style="display:grid; grid-template-columns: 60px 150px 80px 80px 245px 40px; gap:8px; margin-bottom:8px; align-items:center;">
+                            <input type="text" value="${it.idx}" oninput="brands[${bi}].lenses[${li}].items[${ii}].idx=this.value;" style="width:100%; padding:5px;">
+                            <input type="text" value="${it.spec}" oninput="brands[${bi}].lenses[${li}].items[${ii}].spec=this.value;" style="width:100%; padding:5px;" placeholder="설계">
+                            <input type="text" value="${Number(it.pOff||0).toLocaleString()}" oninput="inputPriceFormat(this, (v) => brands[${bi}].lenses[${li}].items[${ii}].pOff = v)" style="width:100%; padding:5px;">
+                            <input type="text" value="${Number(it.pSale||0).toLocaleString()}" oninput="inputPriceFormat(this, (v) => brands[${bi}].lenses[${li}].items[${ii}].pSale = v)" style="width:100%; padding:5px;">
                             
-                            <div style="font-size:0.85em; margin-bottom:12px; background:#f9f9f9; padding:10px; border-radius:8px;">
-                                연령: ${['student','adult','senior'].map(a => `<label style="margin-right:10px;"><input type="checkbox" ${l.targetAges?.includes(a)?'checked':''} onchange="toggleT(${bi},${li},'age','${a}')"> ${a}</label>`).join('')} | 
-                                증상: ${issues.map(is => `<label style="margin-right:10px;"><input type="checkbox" ${l.targetIssues?.includes(is.id)?'checked':''} onchange="toggleT(${bi},${li},'issue','${is.id}')"> ${is.name}</label>`).join('')}
+                            <div style="font-size:0.72em; background:#f0f7ff; padding:5px; border-radius:8px; display:flex; align-items:center; gap:4px; border:1px solid #d1e3f8;">
+                                <b style="color:#d63031;">S+</b><input type="number" step="0.25" value="${it.sMax}" style="width:38px; font-weight:bold;" oninput="brands[${bi}].lenses[${li}].items[${ii}].sMax=parseFloat(this.value)">
+                                ~<input type="number" step="0.25" value="${it.sMin}" style="width:38px;" oninput="brands[${bi}].lenses[${li}].items[${ii}].sMin=parseFloat(this.value)">
+                                <b style="color:#0984e3;">C</b><input type="number" step="0.25" value="${it.cMin||0}" style="width:38px;" oninput="brands[${bi}].lenses[${li}].items[${ii}].cMin=parseFloat(this.value)">
+                                <span style="color:#ccc;">|</span>
+                                <b style="color:#f39c12;">∑</b><input type="number" step="0.25" value="${it.sumMax||0}" style="width:38px; background:#fffbe6; border:1px solid #ffe066;" oninput="brands[${bi}].lenses[${li}].items[${ii}].sumMax=parseFloat(this.value)">
                             </div>
+                            <button class="btn-small" style="background:#95a5a6;" onclick="brands[${bi}].lenses[${li}].items.splice(${ii},1); renderAdmin();">×</button>
+                        </div>`).join('') : ''}
+                    <button class="btn-small" style="background:var(--accent); padding:10px 20px;" onclick="const nextIdx = getNextIndexValue(brands[${bi}].lenses[${li}].items); brands[${bi}].lenses[${li}].items.push({idx: nextIdx, spec:'', pOff:'0', pSale:'0', sMin:-10, sMax:6, cMin:-4, sumMax:0}); renderAdmin();">+ 사양 추가</button>
+                </div>`;
+            }).join('') : ''}
 
-                            ${l.items.map((it, ii) => `
-                                <div style="display:grid; grid-template-columns: 60px 150px 80px 80px 245px 40px; gap:8px; margin-bottom:8px; align-items:center;">
-                                    <input type="text" value="${it.idx}" onchange="brands[${bi}].lenses[${li}].items[${ii}].idx=this.value;" style="width:100%; padding:5px; box-sizing:border-box;">
-                                    <input type="text" value="${it.spec}" onchange="brands[${bi}].lenses[${li}].items[${ii}].spec=this.value;" style="width:100%; padding:5px; box-sizing:border-box;" placeholder="설계">
-                                    <input type="text" value="${Number(it.pOff||0).toLocaleString()}" oninput="inputPriceFormat(this, (v) => brands[${bi}].lenses[${li}].items[${ii}].pOff = v)" style="width:100%; padding:5px; box-sizing:border-box;">
-                                    <input type="text" value="${Number(it.pSale||0).toLocaleString()}" oninput="inputPriceFormat(this, (v) => brands[${bi}].lenses[${li}].items[${ii}].pSale = v)" style="width:100%; padding:5px; box-sizing:border-box;">
-                                    
-                                    <div style="font-size:0.72em; background:#f0f7ff; padding:5px; border-radius:8px; display:flex; align-items:center; gap:4px; border:1px solid #d1e3f8; box-sizing:border-box;">
-                                        <b style="color:#d63031;">S+</b><input type="number" step="0.25" value="${it.sMax}" style="width:38px; font-weight:bold; padding:2px;" onchange="brands[${bi}].lenses[${li}].items[${ii}].sMax=parseFloat(this.value)">
-                                        ~<input type="number" step="0.25" value="${it.sMin}" style="width:38px; padding:2px;" onchange="brands[${bi}].lenses[${li}].items[${ii}].sMin=parseFloat(this.value)">
-                                        <b style="color:#0984e3;">C</b><input type="number" step="0.25" value="${it.cMin||0}" style="width:38px; padding:2px;" onchange="brands[${bi}].lenses[${li}].items[${ii}].cMin=parseFloat(this.value)">
-                                        <span style="color:#ccc; margin:0 2px;">|</span>
-                                        <b style="color:#f39c12;">∑</b><input type="number" step="0.25" value="${it.sumMax||0}" style="width:38px; background:#fffbe6; border:1px solid #ffe066; font-weight:bold; padding:2px;" onchange="brands[${bi}].lenses[${li}].items[${ii}].sumMax=parseFloat(this.value)">
-                                    </div>
-                                    <button class="btn-small" style="background:#95a5a6; width:30px; height:30px; padding:0;" onclick="brands[${bi}].lenses[${li}].items.splice(${ii},1); renderAdmin();">×</button>
-                                </div>
-                            `).join('')}
-                            <button class="btn-small" style="background:var(--accent); padding:10px 20px; margin-top:10px;" 
-                                onclick="const nextIdx = getNextIndexValue(brands[${bi}].lenses[${li}].items); brands[${bi}].lenses[${li}].items.push({idx: nextIdx, spec:'', pOff:'0', pSale:'0', sMin:-10, sMax:6, cMin:-4, sumMax:0}); renderAdmin();">+ 사양 추가</button>
-                        </div>`).join('')}
-                    <button class="btn-ui" style="background:var(--success); width:100%; margin-top:15px; padding:15px;" onclick="addNewLens(${bi})">+ 새 제품 카드 추가</button>
-                </div>
-            </div>`;
-        });
-        document.getElementById('admin-brands-list').innerHTML = bHtml;
-        document.getElementById('admin-order-tab-select').innerHTML = categories.filter(c=>c.id!=='ai').map(c => `<option value="${c.id}" ${adminSelectedTabId===c.id?'selected':''}>${c.name}</option>`).join('');
-    }
+                        <button class="btn-ui" style="background:var(--success); width:100%; margin-top:15px; padding:15px;" onclick="addNewLens(${bi})">+ 새 제품 카드 추가</button>
+                    </div>
+                </div>`;
+            });
+            document.getElementById('admin-brands-list').innerHTML = bHtml;
+            const validTabs = categories.filter(c => c.id !== 'ai');
+            document.getElementById('admin-order-tab-select').innerHTML = validTabs.map(c => `<option value="${c.id}" ${adminSelectedTabId === c.id ? 'selected' : ''}>${c.name}</option>`).join('');
+        } // renderAdmin 함수 끝
 
     // [피커 및 도수 제어]
     function openPowerPicker(type) {
@@ -696,10 +821,11 @@
     }
     function showMatrixEditor() { editingMatrix = {brand:'', name:'', brandColor:'#2c3e50', tabId:'', targetAges:['adult'], targetIssues:['none'], cols:[{name:'', desc:'', addInfo:'', corridor:'', bgColor:'#fdfdfd', prices:{}}]}; updateMEUI(); }
     function editMatrix(i) { editingMatrix = JSON.parse(JSON.stringify(matrices[i])); editingMatrix.originalIndex = i; updateMEUI(); }
+
     function updateMEUI() {
         document.getElementById('matrix-editor').style.display = 'block';
         document.getElementById('m-tab').innerHTML = categories.filter(c=>c.id!=='ai').map(c => `<option value="${c.id}" ${editingMatrix.tabId===c.id?'selected':''}>${c.name}</option>`).join('');
-        document.getElementById('m-brand').value = editingMatrix.brand; document.getElementById('m-brand-color').value = editingMatrix.brandColor; document.getElementById('m-name').value = editingMatrix.name;
+        document.getElementById('m-brand').value = editingMatrix.brand; document.getElementById('m-brand-color').value = (editingMatrix.brandColor && editingMatrix.brandColor !== 'undefined') ? editingMatrix.brandColor : '#2c3e50';
         document.getElementById('m-ages-wrap').innerHTML = ['student','adult','senior'].map(a => `<label style="margin-right:12px;"><input type="checkbox" class="m-age-chk" value="${a}" ${editingMatrix.targetAges?.includes(a)?'checked':''}> ${a}</label>`).join('');
         document.getElementById('m-issues-wrap').innerHTML = issues.map(is => `<label style="margin-right:12px;"><input type="checkbox" class="m-issue-chk" value="${is.id}" ${editingMatrix.targetIssues?.includes(is.id)?'checked':''}> ${is.name}</label>`).join('');
         
@@ -714,7 +840,7 @@
                 <input class="me-input" id="col-n-${i}" value="${c.name}" placeholder="등급명">
                 <input class="me-input" id="col-d-${i}" value="${c.desc||''}" placeholder="한줄설명">
                 <div style="display:flex; gap:3px;"><input class="me-input" id="col-add-${i}" value="${c.addInfo||''}" placeholder="ADD"><input class="me-input" id="col-cor-${i}" value="${c.corridor||''}" placeholder="누진대"></div>
-                <input type="color" id="col-c-${i}" value="${c.bgColor}">
+                <input type="color" id="col-c-${i}" value="${(c.bgColor && String(c.bgColor).startsWith('#')) ? c.bgColor : '#fdfdfd'}">
                 <label style="font-size:0.8em; font-weight:bold;"><input type="checkbox" id="col-s-${i}" ${c.isSale?'checked':''}> SALE</label>
             </th>`;
         });
@@ -804,17 +930,16 @@
     function closeAllModals() { document.querySelectorAll('.admin-panel, #matrix-modal, #picker-overlay, #excel-modal').forEach(el=>el.style.display='none'); document.getElementById('ui-overlay').style.display='none'; }
     function saveData() {
         if(confirm("서버에 최종 저장하시겠습니까?")) {
+            // 저장 시 images 배열을 반드시 포함해야 합니다.
             db.ref('lensData').set({
                 categories, 
                 brands, 
                 issues, 
-                matrices
+                matrices,
+                images  // 이미지 데이터 추가
             })
-            .then(() => alert("✅ 서버 저장 완료! 모든 기기에 반영됩니다."))
-            .catch((error) => {
-                console.error("저장 실패:", error);
-                alert("❌ 저장 실패! 파이어베이스 콘솔의 'Rules' 설정을 확인해 보세요. 오류내용: " + error.message);
-            });
+            .then(() => alert("✅ 저장 완료!"))
+            .catch((error) => alert("저장 실패: " + error.message));
         }
     }
     function exportData() { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify({categories, brands, issues, matrices})], {type:'application/json'})); a.download='eyegentry_backup.json'; a.click(); }
@@ -823,7 +948,20 @@
     function addCategory() { const n = document.getElementById('new-cat-name').value; if(n) { categories.push({id:'t'+Date.now(), name:n, img:'', order: categories.length * 10}); renderAdmin(); }}
     function addIssue() { const n = document.getElementById('new-issue-name').value; if(n) { issues.push({id:'is'+Date.now(), name:n}); renderAdmin(); }}
     function addNewBrand() { brands.push({name: '새 브랜드', lenses: []}); openBrandIndex = brands.length - 1; renderAdmin(); }
-    function addNewLens(bi) { brands[bi].lenses.push({name: '새 제품', tabId: '', items: [], targetAges:['adult'], targetIssues:['none'], isSale:false, order: brands[bi].lenses.length * 10}); renderAdmin(); }
+    function addNewLens(bi) {
+        if (!brands[bi].lenses) brands[bi].lenses = [];
+        brands[bi].lenses.push({
+            name: '새 제품', 
+            tabId: '', 
+            bgColor: '#2c3e50', // 명시적 기본색 지정
+            items: [], 
+            targetAges:['adult'], 
+            targetIssues:['none'], 
+            isSale:false, 
+            order: (brands[bi].lenses.length + 1) * 10
+        });
+        renderAdmin();
+    }
     function toggleT(bi, li, type, val) { let l = brands[bi].lenses[li]; let arr = (type === 'age') ? (l.targetAges = l.targetAges || []) : (l.targetIssues = l.targetIssues || []); let idx = arr.indexOf(val); if(idx > -1) arr.splice(idx, 1); else arr.push(val); renderApp(); }
     function processExcel() { const input = document.getElementById('excel-input').value.trim(); if(!input) return; input.split('\n').forEach(line => { const cols = line.split('\t'); if(cols.length < 6) return; const [bN, lN, idx, spec, pOff, pSale, sMin, sMax, cMin] = cols.map(c => c.trim()); let b = brands.find(x => x.name === bN); if(!b) { b = {name: bN, lenses: []}; brands.push(b); } let l = b.lenses.find(x => x.name === lN); if(!l) { l = {name: lN, tabId: '', items: [], targetAges:['adult'], targetIssues:['none'], order: b.lenses.length * 10}; b.lenses.push(l); } l.items.push({idx, spec, pOff, pSale, sMin: parseFloat(sMin)||-10, sMax: parseFloat(sMax)||6, cMin: parseFloat(cMin)||-4}); }); renderAdmin(); renderApp(); alert("업로드 완료"); }
     // [초기화 함수] - 앱을 처음 실행할 때 호출됩니다.
@@ -838,6 +976,67 @@
             renderApp();
         }
     }
+    init();
+    
+    // 전체화면 토글 함수
+    function toggleFullScreen() {
+        const btn = document.getElementById('fullscreen-btn');
+        
+        if (!document.fullscreenElement) {
+            // 전체화면으로 전환
+            document.documentElement.requestFullscreen().then(() => {
+                btn.innerHTML = "📺 화면 축소";
+                btn.style.background = "#e67e22"; // 주황색으로 변경하여 상태 표시
+            }).catch(err => {
+                alert(`전체화면 전환 실패: ${err.message}`);
+            });
+        } else {
+            // 전체화면 해제
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+                btn.innerHTML = "📺 전체화면";
+                btn.style.background = "#2ecc71"; // 원래 녹색으로 복구
+            }
+        }
+    }
+
+    // (선택사항) ESC 키로 전체화면을 나갔을 때 버튼 글자를 원래대로 돌려주는 로직
+    document.addEventListener('fullscreenchange', () => {
+        const btn = document.getElementById('fullscreen-btn');
+        if (!document.fullscreenElement) {
+            btn.innerHTML = "📺 전체화면";
+            btn.style.background = "#2ecc71";
+        }
+    });
+
+// [이미지 카드 추가 기능 - 하나로 통합 및 개선]
+    function addNewImageCard() {
+        images.push({
+            id: 'img_' + Date.now(),
+            name: '새 홍보 이미지 카드',
+            url: '', 
+            tabId: adminSelectedTabId || (categories[1] ? categories[1].id : ''), 
+            order: (images.length + 1) * 10,
+            targetAges: ['adult', 'student', 'senior'],
+            targetIssues: ['none']
+        });
+        
+        renderAdmin(); 
+        renderApp();
+        alert("이미지 카드가 추가되었습니다. 목록에서 '출력될 탭'을 정하고 이름과 주소를 입력하세요.");
+    }
+
+    // [비밀번호 확인 및 관리자창 열기]
+    function secureAdminOpen() { 
+        const pw = prompt("관리자 비밀번호를 입력하세요."); 
+        if(pw === "1111") {
+            toggleAdmin(); 
+        } else {
+            alert("비밀번호가 틀렸습니다.");
+        }
+    }
+
+    // [시스템 시작]
     init();
 </script>
 </body>
