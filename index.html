@@ -167,6 +167,202 @@
         .sale-active .price-text {
             color: var(--sale) !important; /* 세일 시 빨간색 */
         }
+        #sim-modal .viewport { 
+            position: relative; width: 100%; height: 380px; /* 550에서 380으로 축소 */
+            background: #fff; border-radius: 15px; border: 1px solid #eee; margin: 15px 0; overflow: hidden; 
+        }
+        #sim-modal .eye-bg { position: absolute; top: 50%; left: 70%; transform: translate(-50%, -50%); width: 550px; z-index: 1; } /* 눈 크기 700에서 550으로 축소 */
+        .biconcave { 
+            width: 40px; 
+            height: 170px; 
+            background: rgba(52, 152, 219, 0.4); /* 렌즈 배경색 농도 강화 */
+            border: 3px solid var(--accent);    /* 변수명을 --accent로 통일 */
+            clip-path: polygon(0% 0%, 100% 0%, 70% 50%, 100% 100%, 0% 100%, 30% 50%);
+            display: block !important;
+        }
+
+        .biconvex { 
+            width: 45px; 
+            height: 160px; 
+            background: rgba(52, 152, 219, 0.4); 
+            border: 3px solid var(--accent);
+            clip-path: polygon(20% 0%, 80% 0%, 100% 50%, 80% 100%, 20% 100%, 0% 50%);
+            display: block !important;
+        }
+
+        /* 렌즈 컨테이너 위치 강제 고정 */
+        #lens-container {
+            position: absolute;
+            left: 400px; /* 광선이 꺾이는 지점 근처로 조정 */
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 100;
+            transition: 0.3s;
+        }
+        #sim-modal .source-object { position: absolute; left: 60px; top: 48%; transform: translateY(-50%); font-size: 80px; z-index: 2; }
+        #sim-modal #target { position: absolute; font-size: 45px; z-index: 5; transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); transform-origin: center; }
+        #sim-modal #ray-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 3; pointer-events: none; }
+        #sim-modal polyline { fill: none; stroke: rgba(52, 152, 219, 0.4); stroke-width: 3.5; transition: all 0.5s ease-in-out; }
+        #sim-modal .btn-group { display: flex; justify-content: center; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
+        #sim-modal .btn-base { background: #e9ecef; color: #333; padding: 15px 25px; font-size: 1.4em !important; border-radius: 8px; font-weight: bold; border:none; cursor:pointer; }
+        #sim-modal .btn-base.active { background: #1a2a3a; color: white; }
+        #sim-modal .btn-lens { background: #27ae60; color: white; width: 100%; max-width: 500px; font-size: 1.2em; height: 60px; border-radius: 10px; cursor:pointer; border:none; font-weight:bold; }
+        #sim-modal #description { padding: 20px; background: #f8f9fa; border-radius: 10px; text-align: left; border-left: 6px solid #1a2a3a; font-size: 18px; line-height: 1.6; }
+        .sim-menu-item:hover {
+            background: #f0f7ff !important;
+            color: #8e44ad !important;
+        }
+
+        .sim-tab {
+            padding: 18px 30px;
+            cursor: pointer;
+            font-weight: bold;
+            color: #888;
+            border-bottom: 4px solid transparent;
+            transition: 0.2s;
+        }
+        .sim-tab.active {
+            color: #8e44ad;
+            border-bottom-color: #8e44ad;
+            background: white;
+        }
+        .sim-tab:hover:not(.active) {
+            background: #eee;
+        }
+        .sim-panel { animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .sim-close-touch-btn {
+            background: #8e44ad;
+            color: white;
+            border: none;
+            font-size: 24px;
+            font-weight: 900;
+            padding: 0 40px;
+            cursor: pointer;
+            border-radius: 0 25px 0 15px; /* 모달 오른쪽 위 모서리에 딱 맞춤 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease; /* 부드러운 변화 효과 */
+            height: 100%; /* 상단 바 높이에 꽉 차게 */
+        }
+        /* 마우스 올렸을 때 (Hover) */
+        .sim-close-touch-btn:hover {
+            background: #732d91b; /* 조금 더 진한 빨간색으로 변경 */
+            filter: brightness(1.1); /* 살짝 밝게 광택 효과 */
+            padding: 0 45px; /* 옆으로 살짝 넓어지면서 강조됨 */
+        }
+
+        /* 실제로 눌렀을 때 (Active) */
+        .sim-close-touch-btn:active {
+            transform: scale(0.95); /* 버튼이 쑥 눌리는 느낌 추가 */
+            background: #5e2475;
+        }
+
+        /* 시뮬레이터 전용 탭 스타일 보완 */
+        .sim-tab {
+            padding: 0 35px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            font-weight: bold;
+            color: #888;
+            border-bottom: 5px solid transparent;
+            transition: 0.2s;
+            font-size: 1.1em;
+        }
+        .sim-tab.active { color: #8e44ad; border-bottom-color: #8e44ad; background: white; }
+
+        /* [프리미엄 설계] 전용 레이아웃 */
+        .premium-content { display: flex; gap: 25px; align-items: stretch; justify-content: center; height: 100%; }
+        .premium-lens-grid { display: flex; gap: 15px; flex: 1; }
+        .premium-card { background: #fff; padding: 20px; border-radius: 25px; flex: 1; border: 1px solid #eee; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.03); }
+        .premium-card canvas { border-radius: 50%; width: 100%; max-width: 280px; aspect-ratio: 1/1; box-shadow: 0 10px 30px rgba(0,0,0,0.1); background: #fff; margin-bottom: 15px; }
+
+        /* [프리미엄 전용] 세로 슬라이더 & 눈금 */
+        .premium-side { background: #fff; width: 120px; border-radius: 25px; border: 1px solid #eee; display: flex; flex-direction: column; align-items: center; padding: 20px 10px; }
+        .p-slider-box { height: 400px; position: relative; display: flex; align-items: center; justify-content: center; width: 100%; margin: 15px 0; }
+
+        .p-range { 
+            -webkit-appearance: none; width: 12px; height: 400px; background: #eee; border-radius: 10px; outline: none;
+            writing-mode: vertical-lr; direction: rtl; cursor: pointer;
+        }
+        .p-range::-webkit-slider-thumb { 
+            -webkit-appearance: none; width: 30px; height: 30px; background: #fff; border: 4px solid #1a73e8; border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.2); 
+        }
+
+        /* 눈금 표시 레이어 */
+        .p-markers { position: absolute; height: 400px; right: 10px; display: flex; flex-direction: column; justify-content: space-between; pointer-events: none; }
+        .p-mark { display: flex; align-items: center; font-size: 11px; font-weight: 800; color: #ccc; }
+        .p-tick { width: 8px; border-top: 1px solid #ddd; margin-right: 5px; }
+        .p-mark.zero { color: #555; }
+        .p-mark.zero .p-tick { width: 15px; border-top: 2px solid #555; }
+        
+        /* [근시 진행 시뮬레이터] 전용 스타일 */
+        #panel-myopia .myo-viewport { 
+            position: relative; width: 100%; height: 450px; 
+            background: #fff; border-radius: 15px; border: 1px solid #eee;
+            margin: 20px 0; overflow: hidden;
+        }
+
+        #panel-myopia .eye-container {
+            position: absolute; 
+            top: 50%; 
+            left: 450px; /* 창 크기에 맞춰 좌측 여백 조정 */
+            transform-origin: 0% 50%; 
+            transform: translateY(-50%) scale(1);
+            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1;
+        }
+
+        #panel-myopia .myo-eye-bg { width: 620px; display: block; }
+        #panel-myopia .source-object { position: absolute; left: 140px; top: 48%; transform: translateY(-50%); font-size: 80px; z-index: 2; }
+
+        #panel-myopia #myo-target { 
+            position: absolute; 
+            left: 760px; /* 초점이 맺히는 위치 고정 */
+            top: 195px; 
+            font-size: 45px; z-index: 5;
+            transform: rotate(180deg);
+            transition: filter 0.6s ease;
+        }
+
+        #panel-myopia #myo-ray-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 3; pointer-events: none; }
+        #panel-myopia .myo-btn-group { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        #panel-myopia .myo-btn { padding: 15px 25px; border: none; border-radius: 30px; cursor: pointer; font-weight: bold; transition: 0.3s; font-size: 15px; background: #e9ecef; color: #555; }
+        #panel-myopia .myo-btn.active { background: #8e44ad; color: white; transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+
+        #panel-myopia .info-panel { padding: 20px; background: #f8f9fa; border-radius: 15px; border: 1px solid #eee; text-align: left; }
+        #panel-myopia .status-badge { display: inline-block; padding: 6px 18px; border-radius: 5px; color: white; font-weight: bold; margin-bottom: 10px; }
+
+        /* [근시 억제 원리] 전용 스타일 */
+        #panel-control .ctrl-viewport { 
+            position: relative; width: 100%; height: 430px; 
+            background: #fff; border-radius: 15px; border: 1px solid #eee;
+            margin: 15px 0; overflow: hidden;
+        }
+
+        #panel-control .ctrl-eye-container {
+            position: absolute; top: 50%; left: 350px;
+            transform: translateY(-50%); z-index: 1;
+        }
+
+        #panel-control #focal-curve {
+            fill: none; stroke-width: 6; stroke-linecap: round;
+            transition: all 0.9s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            filter: drop-shadow(0 0 8px rgba(0,0,0,0.3));
+        }
+
+        #panel-control .point-marker { transition: all 0.9s cubic-bezier(0.68, -0.55, 0.27, 1.55); opacity: 0; }
+        #panel-control .point-marker.visible { opacity: 1; }
+
+        #panel-control .ctrl-ray { fill: none; stroke-width: 2; opacity: 0.4; transition: all 0.9s ease; }
+
+        #panel-control .ctrl-btn-group { display: flex; justify-content: center; gap: 15px; margin-bottom: 20px; }
+        #panel-control .ctrl-btn { padding: 18px 35px; border: none; border-radius: 40px; cursor: pointer; font-weight: 800; transition: 0.3s; background: #e9ecef; font-size: 16px; }
+        #panel-control .ctrl-btn.active { background: #1a2a3a; color: white; transform: translateY(-5px); box-shadow: 0 8px 15px rgba(0,0,0,0.2); }
+
     </style>
 </head>
 <body class="filter-off">
@@ -175,10 +371,25 @@
     <header>
         <div class="logo-area"><h2>아이젠트리 충남도청점</h2><span style="font-size:0.8em; opacity:0.7; margin-left:10px;">V1.1 MASTER</span></div>
         <div class="top-controls">
-            <button id="fullscreen-btn" class="btn-ui" style="background:#2ecc71;" onclick="toggleFullScreen()">📺 전체화면</button>
+            <div class="sim-dropdown-container" style="position: relative; display: inline-block;">
+                <div class="sim-dropdown-container" style="position: relative; display: inline-block;">
+                <button id="sim-main-btn" class="btn-ui" style="background:#8e44ad; font-weight:bold;" onclick="toggleSimDropdown()">🎮 시뮬레이션</button>
+    
+                <div id="sim-menu-list" style="display:none; position:absolute; top:50px; left:0; background:white; min-width:240px; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.3); z-index:10001; border:1px solid #ddd; overflow:hidden;">
+                        <div class="sim-menu-item" onclick="openSimulator('refractive')" style="padding:15px; cursor:pointer; border-bottom:1px solid #eee; color:#1a2a3a; font-weight:bold; text-align:left;">🔍 굴절 이상 (근시/원시/난시)</div>
+                        <div class="sim-menu-item" style="padding:15px; color:#aaa; text-align:left; font-size:0.9em; background:#f9f9f9;">➕ 기능 업데이트 예정...</div>
+                    </div>
+                </div>
+                
+                <div id="sim-menu-list" style="display:none; position:absolute; top:50px; left:0; background:white; min-width:240px; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.3); z-index:10001; border:1px solid #ddd; overflow:hidden;">
+                    <div class="sim-menu-item" onclick="openSimulator('refractive')" style="padding:15px; cursor:pointer; border-bottom:1px solid #eee; color:#1a2a3a; font-weight:bold; text-align:left;">🔍 굴절 이상 (근시/원시/난시)</div>
+                    <div class="sim-menu-item" style="padding:15px; color:#aaa; text-align:left; font-size:0.9em; background:#f9f9f9;">➕ 기능 업데이트 예정...</div>
+                </div>
+            </div>
             <button id="filter-toggle-btn" class="btn-ui" style="background:#95a5a6;" onclick="togglePowerFilter()">🔍 도수 적용 안함</button>
+            <button class="btn-ui" style="background:#e67e22; margin-left:5px;" onclick="resetAllFilters()">🔄 전체 초기화</button>
             <div class="control-group">
-                <div onclick="openGeneralPicker('age')"><div class="label-text">대상 선택</div><div id="disp-age" class="power-box-btn">성인</div></div>
+                <div onclick="openGeneralPicker('age')"><div class="label-text">대상 선택</div><div id="disp-age" class="power-box-btn">나이</div></div>
                 <div onclick="openGeneralPicker('issue')"><div class="label-text">불편함 선택</div><div id="disp-issue" class="power-box-btn">없음</div></div>
             </div>
             <div class="control-group">
@@ -188,6 +399,10 @@
                 <div onclick="openPowerPicker('lc')"><div class="label-text">좌 C</div><div id="disp-lc" class="power-box-btn">0.00</div></div>
             </div>
             <button class="btn-admin-gear" onclick="secureAdminOpen()">⚙️</button>
+            <button id="fullscreen-btn" class="btn-admin-gear" 
+                style="margin-left: 5px; border-radius: 50% !important; background: rgba(255,255,255,0.1);" 
+                onclick="toggleFullScreen()">📺
+            </button>
         </div>
     </header>
 
@@ -205,6 +420,158 @@
     <div id="main-display" class="content-body"></div>
 </div>
 
+<div id="sim-modal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); width:1200px; height:900px; background:white; z-index:9500; border-radius:25px; box-shadow:0 0 100px rgba(0,0,0,0.6); overflow:hidden; flex-direction:column;">
+    <div style="background:#f8f9fa; display:flex; border-bottom:1px solid #ddd; height: 80px; align-items: stretch; padding-left: 20px;">
+        <div class="sim-tab active" onclick="switchSimTab('refractive')">🔍 굴절 이상 교정</div>
+        <div class="sim-tab" onclick="switchSimTab('premium')">💎 프리미엄 설계 비교</div>
+        <div class="sim-tab" onclick="switchSimTab('myopia')">📉 성장기 근시 진행</div>
+        <div class="sim-tab" onclick="switchSimTab('control')">🛡️ 근시 억제 원리</div>
+        <div style="flex:1;"></div>
+        <button class="sim-close-touch-btn" onclick="closeSimulator()">닫기 ×</button>
+    </div>
+
+    <div id="sim-content-area" style="flex:1; padding:40px; overflow-y:auto;">
+        <div id="panel-refractive" class="sim-panel">
+            <h2 style="margin:0 0 20px 0; color:#1a2a3a;">🔍 전문 굴절 이상 시뮬레이터</h2>
+            <div class="viewport">
+                <div class="source-object">🌳</div>
+                <img src="https://github.com/eyegentry1007-tech/glass/blob/main/eyeball.png?raw=true" class="eye-bg">
+                <svg id="ray-svg">
+                    <polyline id="ray-top" points="115,150 430,150 780,210" />
+                    <polyline id="ray-bottom" points="115,230 430,230 780,170" />
+                </svg>
+                <div id="lens-container"><div id="lens-shape"></div></div>
+                <div id="target">🌳</div>
+            </div>
+            <div class="btn-group">
+                <button class="btn-base active" id="btn-normal" onclick="setSimBase('normal')">정시</button>
+                <button class="btn-base" id="btn-myopia" onclick="setSimBase('myopia')">근시</button>
+                <button class="btn-base" id="btn-hyperopia" onclick="setSimBase('hyperopia')">원시</button>
+                <button class="btn-base" id="btn-astig" onclick="setSimBase('astigmatism')">난시</button>
+                <button class="btn-astig-add" id="btn-astig-toggle" onclick="toggleSimAstigmatism()">➕ 난시 추가</button>
+            </div>
+            <div style="text-align:center; margin:30px 0;">
+                <button class="btn-lens" id="btn-lens-toggle" onclick="toggleSimLens()" style="width: 500px; height: 70px; font-size: 1.3em;">✨ 안경 렌즈 교정 시뮬레이션 작동</button>
+            </div>
+            <div id="description">상태를 선택하고 교정 버튼을 눌러보세요.</div>
+        </div>
+
+    <div id="panel-myopia" class="sim-panel" style="display:none;">
+        <h2 style="color: #2c3e50; margin: 0;">👓 성장기 안구 성장 시뮬레이션</h2>
+        <p style="color: #666; margin-top: 7px;">성장에 따라 안축장(눈의 길이)이 길어지는 과정을 확인하세요.</p>
+
+        <div class="myo-viewport">
+            <div class="source-object">🌳</div>
+            
+            <div id="myo-eye-container" class="eye-container">
+                <img src="https://github.com/eyegentry1007-tech/glass/blob/main/eyeball.png?raw=true" class="myo-eye-bg">
+            </div>
+
+            <svg id="myo-ray-svg">
+                <polyline points="200,180 465,180 780,235" style="fill:none; stroke:rgba(52, 152, 219, 0.4); stroke-width:3;" />
+                <polyline points="200,270 465,270 780,215" style="fill:none; stroke:rgba(52, 152, 219, 0.4); stroke-width:3;" />
+            </svg>
+
+            <div id="myo-target">🌳</div>
+        </div>
+
+        <div class="myo-btn-group">
+            <button id="btn-baby" class="myo-btn" onclick="updateMyopiaMode('baby')">👶 영유아 (초기 원시)</button>
+            <button id="btn-infant" class="myo-btn" onclick="updateMyopiaMode('infant')">👦 취학 전 (정시)</button>
+            <button id="btn-child" class="myo-btn" onclick="updateMyopiaMode('child')">🧑 초등학생 (근시 진행)</button>
+            <button id="btn-teen" class="myo-btn" onclick="updateMyopiaMode('teen')">👨 중,고등생 (고도 근시 위험)</button>
+        </div>
+
+        <div class="info-panel">
+            <div id="myo-status-tag" class="status-badge">상태 진단</div>
+            <div id="myo-description" style="font-size:16px; line-height:1.6; color:#444;">연령대 버튼을 눌러보세요.</div>
+        </div>
+    </div>
+
+    <div id="panel-premium" class="sim-panel" style="display:none;">
+        <h2 style="color: #2c3e50; margin-top: 0; margin-bottom: 10;">👓 설계 차이에 따른 왜곡</h2>
+        <div class="premium-content">
+            <div class="premium-lens-grid">
+                <div class="premium-card">
+                    <div style="font-weight:900; margin-bottom:12px; font-size:1.2em;">일반 구면</div>
+                    <canvas id="p-canvas-sph"></canvas>
+                    <div style="font-size:0.9em; color:#666; line-height:1.5;">도수가 높을수록 주변부 <br><span style="color:#d63031; font-weight:bold;">왜곡과 파워 변화</span>가 큼</div>
+                </div>
+                <div class="premium-card">
+                    <div style="font-weight:900; margin-bottom:12px; font-size:1.2em; color:#1a73e8;">비구면</div>
+                    <canvas id="p-canvas-asph"></canvas>
+                    <div style="font-size:0.9em; color:#666; line-height:1.5;">설계 보정을 통해 주변부 <br><span style="color:#1a73e8; font-weight:bold;">울렁임과 왜곡</span>을 감소</div>
+                </div>
+                <div class="premium-card">
+                    <div style="font-weight:900; margin-bottom:12px; font-size:1.2em; color:#184888;">양면 비구면</div>
+                    <canvas id="p-canvas-dasph"></canvas>
+                    <div style="font-size:0.9em; color:#666; line-height:1.5;">왜곡을 극소화하여 <br><span style="color:#184888; font-weight:bold;">실제 눈 크기</span>와 가장 유사</div>
+                </div>
+            </div>
+
+            <div class="premium-side">
+                <div id="p-val-label" style="font-size:24px; font-weight:900; margin-bottom:5px;">0.00</div>
+                <div style="font-size:13px; font-weight:bold; color:#d63031;">원시(+)</div>
+                <div class="p-slider-box">
+                    <input type="range" id="p-main-slider" class="p-range" min="-12" max="12" value="-6" step="0.25" oninput="updatePremiumSim()">
+                    <div class="p-markers">
+                        <div class="p-mark"><div class="p-tick"></div>+12</div>
+                        <div class="p-mark"><div class="p-tick"></div>+6</div>
+                        <div class="p-mark"><div class="p-tick"></div>+3</div>
+                        <div class="p-mark zero"><div class="p-tick"></div>0</div>
+                        <div class="p-mark"><div class="p-tick"></div>-3</div>
+                        <div class="p-mark"><div class="p-tick"></div>-6</div>
+                        <div class="p-mark"><div class="p-tick"></div>-12</div>
+                    </div>
+                </div>
+                <div style="font-size:13px; font-weight:bold; color:#1a73e8;">근시(-)</div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="panel-control" class="sim-panel" style="display:none;">
+        <h2 style="color: #1a2a3a; font-size: 28px; margin-top: 0; margin-bottom: 5px;">🛡️ 우리 아이 시력 보호 : 근시 억제 원리</h2>
+        <p style="color: #666; margin-bottom: 20px;">주변부 초점이 <b>망막 안쪽</b>으로 오므려져야 눈의 성장이 멈춥니다.</p>
+
+        <div class="ctrl-viewport">
+            <div class="ctrl-eye-container">
+                <img src="https://github.com/eyegentry1007-tech/glass/blob/main/eyeball.png?raw=true" style="width:620px; opacity:0.9;">
+            </div>
+
+            <svg id="ctrl-ray-svg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; pointer-events: none;">
+                <defs>
+                    <marker id="arrow-head" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+                        <path d="M 0 0 L 10 5 L 0 10 z" fill="#29054b" />
+                    </marker>
+                </defs>
+                <path id="focal-curve" d="" />
+                <path id="ctrl-ray-top" class="ctrl-ray" d="" />
+                <path id="ctrl-ray-mid" class="ctrl-ray" d="" />
+                <path id="ctrl-ray-bot" class="ctrl-ray" d="" />
+
+                <g id="ctrl-normal-markers" class="point-marker">
+                    <circle cx="720" cy="75" r="45" fill="none" stroke="#ff4757" stroke-width="4" stroke-dasharray="6 3" />
+                    <circle cx="720" cy="355" r="45" fill="none" stroke="#ff4757" stroke-width="4" stroke-dasharray="6 3" />
+                </g>
+                <g id="ctrl-control-markers" class="point-marker">
+                    <path d="M 750 35 L 700 85" stroke="#29054b" stroke-width="8" marker-end="url(#arrow-head)" />
+                    <path d="M 750 395 L 700 345" stroke="#29054b" stroke-width="8" marker-end="url(#arrow-head)" />
+                </g>
+            </svg>
+        </div>
+
+        <div class="ctrl-btn-group">
+            <button id="btn-ctrl-normal" class="ctrl-btn" onclick="updateCtrlMode('normal')">❌ 일반 안경</button>
+            <button id="btn-ctrl-control" class="ctrl-btn" onclick="updateCtrlMode('control')">✅ 근시억제 렌즈</button>
+        </div>
+
+        <div id="info-panel" style="padding:25px; background:#fcfcfc; border-radius:15px; border:1px solid #eee; text-align:left;">
+            <div id="ctrl-status-badge" class="status-badge" style="background:#666; color:white; padding:5px 15px; border-radius:8px; margin-bottom:10px; display:inline-block;">모드 선택</div>
+            <div id="ctrl-description" style="font-size:17px; line-height:1.8; color:#333;">위 버튼을 눌러 주변부 상의 변화를 확인해보세요.</div>
+        </div>
+    </div>
+</div>
+</div>
 <div id="admin-panel" class="admin-panel">
     <div style="display:flex; justify-content:space-between; margin-bottom:30px; align-items:center;">
         <div style="display:flex; gap:15px;">
@@ -296,6 +663,8 @@
     <div style="text-align:right; margin-top:20px;"><button class="btn-ui" style="background:var(--danger);" onclick="processExcel()">🚀 즉시 적용</button><button class="btn-ui" style="background:#666; margin-left:10px;" onclick="document.getElementById('excel-modal').style.display='none'">닫기</button></div>
 </div>
 
+
+
 <script>
     // [Firebase]
     const firebaseConfig = { apiKey: "AIzaSyBV128h-2uzJUjGsazgK0XXn6f0uVnMyV8", authDomain: "eyegentry-5c7de.firebaseapp.com", databaseURL: "https://eyegentry-5c7de-default-rtdb.firebaseio.com", projectId: "eyegentry-5c7de", storageBucket: "eyegentry-5c7de.firebasestorage.app", messagingSenderId: "772851251300", appId: "1:772851251300:web:330b44914302a6b0048771" };
@@ -338,7 +707,7 @@
     let currentTabId = 'ai';
     let adminSelectedTabId = ''; // 에러의 원인이었던 변수를 위로 올렸습니다.
     let userPower = {rs:0, rc:0, ls:0, lc:0};
-    let selectedAge = 'adult', selectedIssue = 'none', isFilterActive = false, openBrandIndex = null, editingMatrix = null;
+    let selectedAge = 'none', selectedIssue = 'none', isFilterActive = false, openBrandIndex = null, editingMatrix = null;
     const fixedIndices = ['1.56', '1.60', '1.67', '1.74'];
 
     // 2. 서버에서 데이터를 가져오는 함수
@@ -376,6 +745,38 @@
         // order 값을 물리적 인덱스 기반으로 재설정 (꼬임 방지)
         arr.forEach((item, i) => item.order = (i + 1) * 10);
         renderAdmin(); renderApp();
+    }
+
+    // 1. 초기화 버튼 눌렀을 때 실행되는 함수 (우리가 만든 큰 창을 띄웁니다)
+    function resetAllFilters() {
+        // HTML에 있는 id와 똑같이 맞춰야 창이 뜹니다.
+        document.getElementById('reset-confirm-modal').style.display = 'flex';
+    }
+
+    // 2. [아니오] 버튼 클릭 시 창 닫기
+    function closeResetModal() {
+        document.getElementById('reset-confirm-modal').style.display = 'none';
+    }
+
+    // 3. [예] 버튼 클릭 시 실제 초기화 작업
+    function executeReset() {
+        selectedAge = 'none'; // 'adult' 대신 'none'
+        selectedIssue = 'none';
+        userPower = {rs:0, rc:0, ls:0, lc:0};
+        
+        // 상단 버튼 글자들 초기화
+        document.getElementById('disp-age').innerText = "나이"; // "성인" 대신 "나이"
+        document.getElementById('disp-issue').innerText = "없음";
+        document.getElementById('disp-rs').innerText = "0.00";
+        document.getElementById('disp-rc').innerText = "0.00";
+        document.getElementById('disp-ls').innerText = "0.00";
+        document.getElementById('disp-lc').innerText = "0.00";
+
+        // 메인 화면 다시 그리기 (AI 추천 등 업데이트)
+        renderApp();
+        
+        // 창 닫기
+        closeResetModal();
     }
 
     function moveUnified(idx, dir) {
@@ -708,6 +1109,25 @@
                     
                     <input type="text" value="${l.desc||''}" oninput="brands[${bi}].lenses[${li}].desc=this.value;" placeholder="한줄 설명" style="width:100%; margin-bottom:10px; padding:8px;">
                     
+                    <div style="background:#fcfcfc; padding:10px; border-radius:8px; margin-bottom:12px; font-size:0.85em; border:1px solid #eee;">
+                        <div style="margin-bottom:8px; font-weight:bold; color:var(--primary);">🎯 AI 추천 타겟 설정 (체크 시 AI 탭에 노출)</div>
+                        <div style="display:flex; flex-wrap:wrap; gap:15px;">
+                            <div>
+                                <span style="color:#888; font-weight:bold;">[연령대]</span>
+                                ${['adult', 'student', 'senior'].map(age => {
+                                    const kor = {adult:'성인', student:'학생', senior:'시니어'}[age];
+                                    return `<label style="margin-left:8px; cursor:pointer;"><input type="checkbox" ${(l.targetAges||[]).includes(age)?'checked':''} onchange="toggleT(${bi}, ${li}, 'age', '${age}')"> ${kor}</label>`;
+                                }).join('')}
+                            </div>
+                            <div style="border-left:1px solid #eee; padding-left:15px;">
+                                <span style="color:#888; font-weight:bold;">[불편증상]</span>
+                                ${issues.map(is => `
+                                    <label style="margin-left:8px; cursor:pointer;"><input type="checkbox" ${(l.targetIssues||[]).includes(is.id)?'checked':''} onchange="toggleT(${bi}, ${li}, 'issue', '${is.id}')"> ${is.name}</label>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+
                     ${l.items ? l.items.map((it, ii) => `
                         <div style="display:grid; grid-template-columns: 60px 150px 80px 80px 245px 40px; gap:8px; margin-bottom:8px; align-items:center;">
                             <input type="text" value="${it.idx}" oninput="brands[${bi}].lenses[${li}].items[${ii}].idx=this.value;" style="width:100%; padding:5px;">
@@ -761,15 +1181,24 @@
         const grid = document.getElementById('picker-grid-content');
         const title = document.getElementById('picker-title');
         overlay.style.display = 'flex'; grid.innerHTML = '';
-        const opts = (mode === 'age') ? [{id:'adult', n:'성인'}, {id:'student', n:'학생'}, {id:'senior', n:'시니어'}] : issues;
+        const opts = (mode === 'age') 
+            ? [{id:'none', n:'없음'}, {id:'student', n:'학생'}, {id:'adult', n:'성인'}, {id:'senior', n:'시니어'}] 
+            : issues;
         title.innerText = (mode === 'age') ? "상담 대상 연령 선택" : "불편 증상 선택";
         opts.forEach(o => {
             const btn = document.createElement('div'); btn.className = `pick-btn ${ (mode==='age' ? selectedAge===o.id : selectedIssue===o.id) ? 'selected' : '' }`; 
             btn.innerText = o.name || o.n;
-            btn.onclick = () => {
-                if(mode==='age') { selectedAge = o.id; document.getElementById('disp-age').innerText = o.n; }
-                else { selectedIssue = o.id; document.getElementById('disp-issue').innerText = o.name; }
-                overlay.style.display='none'; renderApp();
+        btn.onclick = () => {
+                if(mode==='age') {
+                    selectedAge = o.id;
+                    // '없음'을 누르면 버튼에 '나이'라고 표시, 그 외엔 선택한 이름 표시
+                    document.getElementById('disp-age').innerText = (o.id === 'none') ? "나이" : o.n;
+                } else {
+                    selectedIssue = o.id;
+                    document.getElementById('disp-issue').innerText = o.name;
+                }
+                overlay.style.display='none'; 
+                renderApp();
             };
             grid.appendChild(btn);
         });
@@ -962,7 +1391,22 @@
         });
         renderAdmin();
     }
-    function toggleT(bi, li, type, val) { let l = brands[bi].lenses[li]; let arr = (type === 'age') ? (l.targetAges = l.targetAges || []) : (l.targetIssues = l.targetIssues || []); let idx = arr.indexOf(val); if(idx > -1) arr.splice(idx, 1); else arr.push(val); renderApp(); }
+    function toggleT(bi, li, type, val) {
+        let l = brands[bi].lenses[li];
+        if(type === 'age') {
+            l.targetAges = l.targetAges || [];
+            let idx = l.targetAges.indexOf(val);
+            if(idx > -1) l.targetAges.splice(idx, 1);
+            else l.targetAges.push(val);
+        } else {
+            l.targetIssues = l.targetIssues || [];
+            let idx = l.targetIssues.indexOf(val);
+            if(idx > -1) l.targetIssues.splice(idx, 1);
+            else l.targetIssues.push(val);
+        }
+        renderAdmin(); // 관리자 화면 갱신
+        renderApp();   // 메인 화면 갱신
+    }
     function processExcel() { const input = document.getElementById('excel-input').value.trim(); if(!input) return; input.split('\n').forEach(line => { const cols = line.split('\t'); if(cols.length < 6) return; const [bN, lN, idx, spec, pOff, pSale, sMin, sMax, cMin] = cols.map(c => c.trim()); let b = brands.find(x => x.name === bN); if(!b) { b = {name: bN, lenses: []}; brands.push(b); } let l = b.lenses.find(x => x.name === lN); if(!l) { l = {name: lN, tabId: '', items: [], targetAges:['adult'], targetIssues:['none'], order: b.lenses.length * 10}; b.lenses.push(l); } l.items.push({idx, spec, pOff, pSale, sMin: parseFloat(sMin)||-10, sMax: parseFloat(sMax)||6, cMin: parseFloat(cMin)||-4}); }); renderAdmin(); renderApp(); alert("업로드 완료"); }
     // [초기화 함수] - 앱을 처음 실행할 때 호출됩니다.
     function init() {
@@ -983,29 +1427,25 @@
         const btn = document.getElementById('fullscreen-btn');
         
         if (!document.fullscreenElement) {
-            // 전체화면으로 전환
             document.documentElement.requestFullscreen().then(() => {
-                btn.innerHTML = "📺 화면 축소";
-                btn.style.background = "#e67e22"; // 주황색으로 변경하여 상태 표시
-            }).catch(err => {
-                alert(`전체화면 전환 실패: ${err.message}`);
+                // 글자 대신 아이콘만 유지 (또는 끄기 아이콘으로 변경 가능)
+                btn.innerHTML = "📺"; 
+                btn.style.background = "rgba(230, 126, 34, 0.3)"; // 활성화 시 살짝 주황빛
             });
         } else {
-            // 전체화면 해제
             if (document.exitFullscreen) {
                 document.exitFullscreen();
-                btn.innerHTML = "📺 전체화면";
-                btn.style.background = "#2ecc71"; // 원래 녹색으로 복구
+                btn.innerHTML = "📺";
+                btn.style.background = "rgba(255,255,255,0.05)"; // 원래 색으로 복구
             }
         }
     }
 
-    // (선택사항) ESC 키로 전체화면을 나갔을 때 버튼 글자를 원래대로 돌려주는 로직
     document.addEventListener('fullscreenchange', () => {
         const btn = document.getElementById('fullscreen-btn');
         if (!document.fullscreenElement) {
-            btn.innerHTML = "📺 전체화면";
-            btn.style.background = "#2ecc71";
+            btn.innerHTML = "📺";
+            btn.style.background = "rgba(255,255,255,0.05)";
         }
     });
 
@@ -1037,7 +1477,427 @@
     }
 
     // [시스템 시작]
-    init();
+    init();''
+
+    const pImg = new Image();
+    pImg.crossOrigin = "anonymous";
+    pImg.src = 'https://images.unsplash.com/photo-1541123437800-1bb1317badc2?q=80&w=1200';
+
+    const pConfigs = [
+        { id: 'p-canvas-sph', factor: 1.0 },
+        { id: 'p-canvas-asph', factor: 0.4 },
+        { id: 'p-canvas-dasph', factor: 0.15 }
+    ];
+
+    /* 3. 시뮬레이터 전용 로직 통합 (스크립트 최하단에 추가) */
+let sBase = 'normal', sAstig = false, sLens = false;
+const sConf = {
+    normal: { x: 850, blur: 0, text: "정시" },
+    myopia: { x: 750, blur: 1.5, text: "근시" },
+    hyperopia: { x: 950, blur: 1.5, text: "원시" },
+    astigmatism: { x: 850, blur: 2, text: "단순 난시" }
+};
+
+// 1. 시뮬레이션 세부 메뉴 토글 (열고 닫기)
+function toggleSimDropdown() {
+    const menu = document.getElementById('sim-menu-list');
+    const isVisible = menu.style.display === 'block';
+    menu.style.display = isVisible ? 'none' : 'block';
+}
+
+// 2. 세부 메뉴에서 기능을 선택했을 때 실행 (통교체용 코드)
+function openSimulator(type) {
+    // 1. 드롭다운 메뉴 닫기
+    const menu = document.getElementById('sim-menu-list');
+    if(menu) menu.style.display = 'none';
+    
+    // 2. 창 열기 (탭 구조를 위해 block 대신 flex 사용)
+    document.getElementById('sim-modal').style.display = 'flex';
+    document.getElementById('ui-overlay').style.display = 'block';
+    
+    // 3. 타이밍 버그 해결: 0.1초 뒤에 첫 번째 탭(굴절 이상) 활성화
+    // 창이 완전히 화면에 그려진 뒤에 그림을 그려야 좌표가 안 틀립니다.
+    setTimeout(() => {
+        switchSimTab('refractive'); 
+    }, 100);
+}
+
+// 3. 메뉴 바깥쪽 클릭 시 메뉴 자동으로 닫기 (편의 기능)
+window.addEventListener('click', function(e) {
+    const container = document.querySelector('.sim-dropdown-container');
+    if (container && !container.contains(e.target)) {
+        document.getElementById('sim-menu-list').style.display = 'none';
+    }
+});
+
+function closeSimulator() {
+    document.getElementById('sim-modal').style.display = 'none';
+    document.getElementById('ui-overlay').style.display = 'none';
+}
+
+function setSimBase(state) {
+    sBase = state; sLens = false;
+    if (state === 'astigmatism') sAstig = false;
+    renderSim();
+}
+
+function toggleSimAstigmatism() {
+    sAstig = !sAstig; sLens = false;
+    if (sAstig && sBase === 'astigmatism') sBase = 'normal';
+    renderSim();
+}
+
+function toggleSimLens() {
+    // 정시이면서 난시도 추가되지 않은 완벽한 정시 상태면 아예 실행 안 함
+    if (sBase === 'normal' && !sAstig) return; 
+
+    sLens = !sLens;
+    renderSim();
+}
+
+function renderSim() {
+    // ID 매칭 오류 해결 (btn-astigmatism vs btn-astig)
+    document.querySelectorAll('#sim-modal .btn-base').forEach(b => b.classList.remove('active'));
+    const activeBtnId = (sBase === 'astigmatism') ? 'btn-astig' : 'btn-' + sBase;
+    const activeBtn = document.getElementById(activeBtnId);
+    if(activeBtn) activeBtn.classList.add('active');
+
+    // ... 광선 및 렌즈 투명도 제어 ...
+    const lensCont = document.getElementById('lens-container');
+    if (sLens) {
+        lensCont.style.opacity = "1"; // 렌즈 나타남
+        // 원시면 볼록(biconvex), 그 외엔 오목(biconcave)
+        document.getElementById('lens-shape').className = (sBase === 'hyperopia') ? "biconvex" : "biconcave";
+    } else {
+        lensCont.style.opacity = "0"; // 렌즈 사라짐
+    }
+}
+
+function updatePremiumSim() {
+    const s = document.getElementById('p-main-slider');
+    const label = document.getElementById('p-val-label');
+    if (!s || !label) return;
+
+    const val = parseFloat(s.value);
+    const percent = ((val - (-12)) / 24) * 100;
+
+    if (val >= 0) {
+        s.style.background = `linear-gradient(to top, #eee 50%, #d63031 50%, #d63031 ${percent}%, #eee ${percent}%)`;
+        label.style.color = "#d63031";
+    } else {
+        s.style.background = `linear-gradient(to top, #eee ${percent}%, #1a73e8 ${percent}%, #1a73e8 50%, #eee 50%)`;
+        label.style.color = "#1a73e8";
+    }
+    label.innerText = (val > 0 ? "+" : "") + val.toFixed(2);
+
+    pConfigs.forEach(conf => {
+        const cvs = document.getElementById(conf.id);
+        if(!cvs) return;
+        const ctx = cvs.getContext('2d');
+        const size = 300; cvs.width = size; cvs.height = size;
+        
+        const k = val * 0.0000025 * conf.factor;
+        const mag = 1 + (val * 0.005 * conf.factor);
+        const sourceSize = size * 2.8; 
+        
+        const off = document.createElement('canvas');
+        off.width = sourceSize; off.height = sourceSize;
+        const oCtx = off.getContext('2d');
+        oCtx.drawImage(pImg, 0, 0, sourceSize, sourceSize);
+        oCtx.strokeStyle = "rgba(255,255,255,0.7)"; 
+        oCtx.lineWidth = 2;
+        for(let i=0; i<=sourceSize; i+=40) {
+            oCtx.beginPath(); oCtx.moveTo(i,0); oCtx.lineTo(i,sourceSize); oCtx.stroke();
+            oCtx.beginPath(); oCtx.moveTo(0,i); oCtx.lineTo(sourceSize,i); oCtx.stroke();
+        }
+
+        const imgD = oCtx.getImageData(0,0,sourceSize,sourceSize);
+        const outD = ctx.createImageData(size,size);
+
+        for (let y=0; y<size; y++) {
+            for (let x=0; x<size; x++) {
+                const dx = x - 150, dy = y - 150;
+                const r2 = dx*dx + dy*dy;
+                const f = 1 + k * r2;
+                const sx = (sourceSize/2) + dx / (f * mag), sy = (sourceSize/2) + dy / (f * mag);
+                if (sx>=0 && sx<sourceSize && sy>=0 && sy<sourceSize) {
+                    const sIdx = (Math.floor(sy)*sourceSize + Math.floor(sx))*4, dIdx = (y*size + x)*4;
+                    outD.data[dIdx] = imgD.data[sIdx];
+                    outD.data[dIdx+1] = imgD.data[sIdx+1];
+                    outD.data[dIdx+2] = imgD.data[sIdx+2];
+                    outD.data[dIdx+3] = 255;
+                }
+            }
+        }
+        ctx.putImageData(outD, 0, 0);
+    });
+}
+
+/* [근시 진행] 시뮬레이션 데이터 설정 */
+const myopiaModes = {
+    baby: { scale: 0.60, blur: 4, status: "영유아 (초기 원시안)", color: "#e67e22", desc: "아이들은 원래 안구가 작아 원시 상태로 태어납니다. 성장에 따라 자연스럽게 정시가 됩니다." },
+    infant: { scale: 0.82, blur: 0, status: "취학 전 (건강한 정시)", color: "#27ae60", desc: "안구 길이와 시력이 조화를 이루는 가장 건강한 상태입니다. 스마트폰 사용 시 주의가 필요합니다." },
+    child: { scale: 1.05, blur: 2, status: "초등학생 (근시 진행)", color: "#3498db", desc: "안구가 급격히 길어지며 <b>축성 근시</b>가 시작되는 시기입니다. 억제 관리가 반드시 필요합니다." },
+    teen: { scale: 1.25, blur: 6, status: "중고등생 (고도 근시 위험)", color: "#e74c3c", desc: "안구가 과도하게 길어져 고도 근시로 진행된 상태입니다. 시력 보정뿐 아니라 망막 관리도 중요합니다." }
+};
+
+function updateMyopiaMode(modeKey) {
+    // 버튼 활성화 클래스 제어
+    document.querySelectorAll('.myo-btn').forEach(btn => btn.classList.remove('active'));
+    const targetBtn = document.getElementById(`btn-${modeKey}`);
+    if(targetBtn) targetBtn.classList.add('active');
+
+    const data = myopiaModes[modeKey];
+    
+    // 안구 크기 조절 (translateY 유지하면서 scale만 변경)
+    const eyeCont = document.getElementById('myo-eye-container');
+    eyeCont.style.transform = `translateY(-50%) scale(${data.scale})`;
+
+    // 나무(상) 흐림 정도 조절
+    const myoTarget = document.getElementById('myo-target');
+    myoTarget.style.filter = `blur(${data.blur}px)`;
+
+    // 텍스트 업데이트
+    document.getElementById('myo-status-tag').innerText = data.status;
+    document.getElementById('myo-status-tag').style.background = data.color;
+    document.getElementById('myo-description').innerHTML = data.desc;
+}
+
+function renderSim() {
+    // 기존 버튼 클래스 제어
+    document.querySelectorAll('#sim-modal .btn-base').forEach(b => b.classList.remove('active'));
+    document.getElementById(sBase === 'astigmatism' ? 'btn-astig' : 'btn-' + sBase).classList.add('active');
+    document.getElementById('btn-astig-toggle').classList.toggle('active', sAstig);
+    document.getElementById('btn-lens-toggle').classList.toggle('active', sLens);
+
+    const target = document.getElementById('target');
+    const rayTop = document.getElementById('ray-top');
+    const rayBottom = document.getElementById('ray-bottom');
+    const lensCont = document.getElementById('lens-container');
+    const lensShape = document.getElementById('lens-shape');
+    const desc = document.getElementById('description');
+
+    const base = sConf[sBase === 'astigmatism' ? 'normal' : sBase];
+    let fX = sLens ? 850 : base.x;
+    let fBlur = sLens ? 0 : base.blur;
+    let shadow = "none";
+
+    if ((sAstig || sBase === 'astigmatism') && !sLens) {
+        fBlur += 2; shadow = "0 0 12px rgba(0,0,0,0.2), 30px 5px 4px rgba(0,0,0,0.15)";
+    }
+
+    // 진단 텍스트 로직
+    let name = (sBase === 'astigmatism') ? "단순 난시" : base.text;
+    if (sAstig && sBase !== 'astigmatism' && sBase !== 'normal') name += "성 난시";
+    else if (sAstig && sBase === 'normal') name = "단순 난시";
+
+    desc.innerHTML = `<b>상태:</b> ${name}<br>` + (sLens ? 
+        "<span style='color:#27ae60;'><b>[교정]</b> 아이젠트리의 정밀 검안 렌즈로 초점을 망막에 맺히게 했습니다.</span>" : 
+        "초점이 정확하지 않아 시야가 흐려 보입니다.");
+
+    target.style.left = (fX - 22) + "px";
+    target.style.top = "160px"; // ★ 이 숫자를 키울수록 나무가 아래로 내려갑니다 (굴절 이상 시뮬레이터 오른쪽 나무 상하 위치)
+    target.style.filter = `blur(${fBlur}px)`;
+    target.style.textShadow = shadow;
+    target.style.transform = "rotate(180deg)";
+    target.style.textShadow = shadow;
+    target.style.transform = "rotate(180deg)";
+
+    rayTop.setAttribute("points", `115,150 500,150 ${fX},210`); //굴절 이상 광선1 조정
+    rayBottom.setAttribute("points", `115,230 500,230 ${fX},170`); //굴절 이상 광선2 조정
+
+    lensCont.style.opacity = sLens ? "1" : "0";
+    if (sLens) {
+    lensCont.style.opacity = "1";
+    // 원시일 때는 볼록렌즈(biconvex), 그 외(근시/난시)는 오목렌즈(biconcave) 부여
+    lensShape.className = (sBase === 'hyperopia') ? "biconvex" : "biconcave";
+    lensCont.style.zIndex = "10"; // 다른 요소보다 위에 보이도록 보장
+    } else {
+        lensCont.style.opacity = "0";
+    }
+}
+
+/* [근시 억제] 시뮬레이션 데이터 */
+const ctrlConfigs = {
+    normal: {
+        curve: "M 720 45 Q 800 215 720 385", 
+        color: "#ff4757",
+        rays: { 
+            top: "M 150 265 L 720 45", 
+            mid: "M 150 215 L 760 215", 
+            bot: "M 150 165 L 720 385" 
+        },
+        status: "원시성 탈초점 발생 (위험)",
+        desc: "일반 안경은 주변부 상이 <b>망막 뒤편</b>에 맺힙니다. 뇌는 이 상을 잡기 위해 <b>안구를 뒤로 더 성장</b>시키려 하며, 이것이 근시가 심해지는 주요 원인입니다."
+    },
+    control: {
+        curve: "M 630 75 Q 890 215 630 355", 
+        color: "#2ed573",
+        rays: { 
+            top: "M 150 265 L 630 75", 
+            mid: "M 150 215 L 760 215", 
+            bot: "M 150 165 L 630 355" 
+        },
+        status: "근시성 탈초점 유도 (억제)",
+        desc: "특수 설계된 렌즈는 주변부 상을 <b>망막 앞쪽(눈 안쪽)</b>으로 강하게 오므려줍니다. 이 상이 <b>'성장 중지 신호'</b> 역할을 하여 안구가 길어지는 것을 효과적으로 억제합니다."
+    }
+};
+
+function updateCtrlMode(mode) {
+    document.querySelectorAll('.ctrl-btn').forEach(b => b.classList.remove('active'));
+    const targetBtn = document.getElementById(`btn-ctrl-${mode}`);
+    if(targetBtn) targetBtn.classList.add('active');
+
+    const conf = ctrlConfigs[mode];
+    const curve = document.getElementById('focal-curve');
+    curve.setAttribute('d', conf.curve);
+    curve.style.stroke = conf.color;
+
+    document.getElementById('ctrl-ray-top').setAttribute('d', conf.rays.top);
+    document.getElementById('ctrl-ray-mid').setAttribute('d', conf.rays.mid);
+    document.getElementById('ctrl-ray-bot').setAttribute('d', conf.rays.bot);
+    
+    const rayElements = ['ctrl-ray-top', 'ctrl-ray-mid', 'ctrl-ray-bot'];
+    rayElements.forEach(id => document.getElementById(id).style.stroke = conf.color);
+
+    document.getElementById('ctrl-normal-markers').classList.toggle('visible', mode === 'normal');
+    document.getElementById('ctrl-control-markers').classList.toggle('visible', mode === 'control');
+
+    const badge = document.getElementById('ctrl-status-badge');
+    badge.innerText = conf.status;
+    badge.style.background = conf.color;
+    document.getElementById('ctrl-description').innerHTML = conf.desc;
+}
+
+// 1. 메인 시뮬레이션 버튼 로직 (드롭다운 없이 바로 창 띄우기)
+function toggleSimDropdown() {
+    document.getElementById('sim-modal').style.display = 'flex'; // flex로 열어야 레이아웃이 잡힘
+    document.getElementById('ui-overlay').style.display = 'block';
+    switchSimTab('refractive'); // 기본 첫 번째 탭 활성화
+}
+
+// 2. 창 내부 탭 전환 로직
+function switchSimTab(tabId) {
+    document.querySelectorAll('.sim-panel').forEach(p => p.style.display = 'none');
+    document.querySelectorAll('.sim-tab').forEach(t => t.classList.remove('active'));
+    
+    document.getElementById('panel-' + tabId).style.display = 'block';
+    
+    // [중요!] 이 부분이 추가되어야 합니다.
+    if(event && event.currentTarget) event.currentTarget.classList.add('active');
+
+    // 탭별 시뮬레이션 초기화 실행
+    if(tabId === 'refractive') {
+        renderSim();
+    } 
+    /* --- 프리미엄 탭 초기화 코드 추가 --- */
+    else if(tabId === 'premium') {
+        setTimeout(updatePremiumSim, 150); // 창이 뜨는 시간을 고려해 0.15초 뒤에 실행
+    }
+    else if(tabId === 'myopia') {
+        updateMyopiaMode('infant'); // 탭 열 때 유아기(정시)를 기본으로 보여줌
+    }
+    else if(tabId === 'control') {
+        setTimeout(() => updateCtrlMode('normal'), 100); // 탭 열 때 일반 안경 모드 기본값
+    }
+}
+
+// 3. 기존의 toggleSimLens 수정 (정시일 때 반응 없음)
+function toggleSimLens() {
+    if (sBase === 'normal' && !sAstig) return; 
+    sLens = !sLens;
+    renderSim();
+}
+
+// 4. closeSimulator 수정
+function closeSimulator() {
+    document.getElementById('sim-modal').style.display = 'none';
+    document.getElementById('ui-overlay').style.display = 'none';
+}
+
+/* 프리미엄 렌즈 시뮬레이션 로직 */
+const premiumImg = new Image();
+premiumImg.crossOrigin = "anonymous";
+premiumImg.src = 'https://images.unsplash.com/photo-1541123437800-1bb1317badc2?q=80&w=1200&auto=format&fit=crop';
+
+const premiumConfigs = [
+    { id: 'canvas-sph', factor: 1.0 },
+    { id: 'canvas-asph', factor: 0.4 },
+    { id: 'canvas-dasph', factor: 0.15 }
+];
+
+function updatePremiumLens() {
+    const slider = document.getElementById('p-slider');
+    const label = document.getElementById('p-label');
+    const power = parseFloat(slider.value);
+    
+    label.innerText = (power > 0 ? "+" : "") + power.toFixed(2);
+    label.style.color = power < 0 ? "#1a73e8" : "#d93025";
+
+    premiumConfigs.forEach(item => {
+        const canvas = document.getElementById(item.id);
+        if(!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const size = 300; 
+        canvas.width = size; canvas.height = size;
+        
+        const k = power * 0.0000025 * item.factor;
+        const mag = 1 + (power * 0.005 * item.factor);
+
+        // 격자 무늬가 포함된 배경 그리기
+        const sourceSize = size * 2.8; 
+        const offCanvas = document.createElement('canvas');
+        offCanvas.width = sourceSize; offCanvas.height = sourceSize;
+        const oCtx = offCanvas.getContext('2d');
+        oCtx.drawImage(premiumImg, 0, 0, sourceSize, sourceSize);
+        oCtx.strokeStyle = "rgba(255, 255, 255, 0.5)"; 
+        for(let i=0; i<=sourceSize; i+=40) {
+            oCtx.beginPath(); oCtx.moveTo(i, 0); oCtx.lineTo(i, sourceSize); oCtx.stroke();
+            oCtx.beginPath(); oCtx.moveTo(0, i); oCtx.lineTo(sourceSize, i); oCtx.stroke();
+        }
+
+        const imgData = oCtx.getImageData(0, 0, sourceSize, sourceSize);
+        const outData = ctx.createImageData(size, size);
+
+        for (let y = 0; y < size; y++) {
+            for (let x = 0; x < size; x++) {
+                const dx = x - 150; const dy = y - 150;
+                const r2 = dx*dx + dy*dy;
+                const f = 1 + k * r2;
+                const sx = (sourceSize/2) + dx / (f * mag);
+                const sy = (sourceSize/2) + dy / (f * mag);
+                if (sx >= 0 && sx < sourceSize && sy >= 0 && sy < sourceSize) {
+                    const sIdx = (Math.floor(sy) * sourceSize + Math.floor(sx)) * 4;
+                    const dIdx = (y * size + x) * 4;
+                    outData.data[dIdx] = imgData.data[sIdx];
+                    outData.data[dIdx+1] = imgData.data[sIdx+1];
+                    outData.data[dIdx+2] = imgData.data[sIdx+2];
+                    outData.data[dIdx+3] = 255;
+                }
+            }
+        }
+        ctx.putImageData(outData, 0, 0);
+    });
+}
+
+// 탭 전환 함수(switchSimTab) 안에 아래 내용을 추가하세요
+// if(tabId === 'premium') setTimeout(updatePremiumLens, 100);
+
 </script>
+
+<div id="reset-confirm-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:11000; justify-content:center; align-items:center;">
+    <div style="background:white; width:90%; max-width:450px; border-radius:30px; padding:40px 30px; text-align:center; box-shadow:0 20px 60px rgba(0,0,0,0.5);">
+        <div style="font-size:50px; margin-bottom:20px;">🔄</div>
+        <h3 style="font-size:24px; color:#2c3e50; margin-bottom:15px; font-weight:900;">전체 초기화</h3>
+        <p style="font-size:18px; color:#666; line-height:1.6; margin-bottom:35px;">
+            모든 선택 항목(대상, 증상, 도수)을<br>처음 상태로 되돌릴까요?
+        </p>
+        
+        <div style="display:flex; gap:15px;">
+            <button onclick="closeResetModal()" style="flex:1; padding:25px; border-radius:20px; border:none; background:#eee; color:#666; font-size:20px; font-weight:900; cursor:pointer;">아니오</button>
+            <button onclick="executeReset()" style="flex:1; padding:25px; border-radius:20px; border:none; background:#e67e22; color:white; font-size:20px; font-weight:900; cursor:pointer;">예</button>
+        </div>
+    </div>
+</div>
 </body>
 </html>
