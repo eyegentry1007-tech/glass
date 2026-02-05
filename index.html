@@ -167,6 +167,51 @@
         .sale-active .price-text {
             color: var(--sale) !important; /* 세일 시 빨간색 */
         }
+
+        #sim-modal {
+            /* 기본 숨김 및 위치 설정 */
+            display: none; 
+            position: fixed; 
+            top: 50%; 
+            left: 50%; 
+            z-index: 9500; 
+            
+            /* 기본 크기 */
+            width: 1200px; 
+            height: 900px; 
+            background: white; 
+            border-radius: 25px; 
+            box-shadow: 0 0 100px rgba(0,0,0,0.6); 
+            overflow: hidden; 
+            flex-direction: column;
+
+            /* ★ 핵심: 화면 중앙 기준 배율 조정 */
+            transform: translate(-50%, -50%) scale(1);
+            transform-origin: center center;
+            transition: transform 0.2s ease-out;
+        }
+
+        /* [가로 1250px 이하 - 아이패드 10세대 가로 맞춤] */
+        @media screen and (max-width: 1250px) {
+            #sim-modal {
+                transform: translate(-50%, -50%) scale(0.88) !important;
+            }
+        }
+
+        /* [가로 1024px 이하 - 일반 태블릿/아이패드 세로] */
+        @media screen and (max-width: 1024px) {
+            #sim-modal {
+                transform: translate(-50%, -50%) scale(0.75) !important;
+            }
+        }
+
+        /* [가로 768px 이하 - 스마트폰 등] */
+        @media screen and (max-width: 768px) {
+            #sim-modal {
+                transform: translate(-50%, -50%) scale(0.55) !important;
+            }
+        }
+
         #sim-modal .viewport { 
             position: relative; width: 100%; height: 380px; /* 550에서 380으로 축소 */
             background: #fff; border-radius: 15px; border: 1px solid #eee; margin: 15px 0; overflow: hidden; 
@@ -206,6 +251,52 @@
         #sim-modal .btn-group { display: flex; justify-content: center; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
         #sim-modal .btn-base { background: #e9ecef; color: #333; padding: 15px 25px; font-size: 1.4em !important; border-radius: 8px; font-weight: bold; border:none; cursor:pointer; }
         #sim-modal .btn-base.active { background: #1a2a3a; color: white; }
+        /* [난시 추가 버튼 - 좌우 분할 및 텍스트 2단 정렬] */
+        #sim-modal .btn-astig-add { 
+            background: #ddeeff; 
+            color: #333; 
+            padding: 8px 18px;         /* 두 줄 높이에 맞춰 상하 여백 조절 */
+            border-radius: 10px; 
+            font-weight: bold; 
+            border: 2px solid #ced4da; 
+            cursor: pointer; 
+            transition: all 0.3s ease;
+            display: inline-flex;      /* 가로로 기호와 글씨 배치 */
+            align-items: center;       /* 세로 중앙 맞춤 */
+            gap: 12px;                 /* 플러스와 글씨 사이 간격 */
+        }
+        /* 왼쪽 플러스(+) 기호 스타일 */
+        #sim-modal .btn-astig-add .plus-icon {
+            font-size: 1.8em;          /* 플러스 기호를 크게 강조 */
+            font-weight: 900;
+        }
+        /* 오른쪽 두 줄 글씨 스타일 */
+        #sim-modal .btn-astig-add .text-group {
+            display: flex;
+            flex-direction: column;    /* 글씨를 위아래 2단으로 쌓기 */
+            align-items: flex-start;   /* 왼쪽 정렬 */
+            line-height: 1.1;          /* 줄 간격을 좁게 */
+            font-size: 1.4em;          /* 두 줄이므로 크기를 살짝 줄임 */
+        }
+        /* 마우스 올렸을 때 */
+        #sim-modal .btn-astig-add:hover {
+            background: #dee2e6;
+        }
+        /* ★ 난시 활성화 시 (주황색 변신) */
+        #sim-modal .btn-astig-add.active { 
+            background: #8b1ab8 !important; 
+            color: white !important; 
+            border-color: #d35400;
+            box-shadow: 0 4px 12px rgba(230, 126, 34, 0.3);
+        }
+        /* [난시 추가 버튼 - 비활성화 상태 스타일] */
+        #sim-modal .btn-astig-add.disabled {
+            opacity: 0.3;              /* 아주 연하게 만듦 */
+            filter: grayscale(1) blur(1px); /* 흑백 + 약간의 흐림 효과 */
+            cursor: not-allowed;       /* 마우스 커서를 '금지' 모양으로 변경 */
+            pointer-events: none;      /* 클릭 아예 안 먹히게 차단 */
+            box-shadow: none !important;
+        }
         #sim-modal .btn-lens { background: #27ae60; color: white; width: 100%; max-width: 500px; font-size: 1.2em; height: 60px; border-radius: 10px; cursor:pointer; border:none; font-weight:bold; }
         #sim-modal #description { padding: 20px; background: #f8f9fa; border-radius: 10px; text-align: left; border-left: 6px solid #1a2a3a; font-size: 18px; line-height: 1.6; }
         .sim-menu-item:hover {
@@ -273,6 +364,70 @@
             font-size: 1.1em;
         }
         .sim-tab.active { color: #8e44ad; border-bottom-color: #8e44ad; background: white; }
+
+        /* [1. 기본 설정: 넓은 화면일 때 - 한 줄로 쫙] */
+        .top-controls {
+            display: flex;
+            flex-direction: row; /* 기본은 가로 한 줄 */
+            align-items: center;
+            gap: 12px;
+        }
+
+        .action-row, .selection-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .inputs-row, .icons-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* [아이패드 및 좁은 화면: 2단 정렬 최적화] */
+        @media screen and (max-width: 1450px) {
+            .top-controls {
+                flex-direction: column !important; /* 세로 2단으로 쌓기 */
+                align-items: flex-start !important; /* ★ 핵심: 두 줄의 왼쪽 끝 라인을 맞춤 */
+                gap: 12px !important;
+                margin-left: 20px; /* 로고와의 최소 간격 확보 */
+            }
+
+            /* 상단 버튼줄과 하단 선택창줄의 정렬 통일 */
+            .action-row, .selection-container {
+                display: flex;
+                justify-content: flex-start !important; /* 왼쪽부터 채우기 */
+                width: 100%;
+                gap: 10px;
+            }
+
+            .inputs-row {
+                display: flex;
+                gap: 10px;
+                flex: 1; /* 가용 공간을 꽉 채우도록 설정 */
+            }
+
+            /* 하단 선택창들도 위 버튼들과 같은 느낌으로 폭 조절 */
+            .control-group {
+                display: flex;
+                gap: 8px;
+                padding: 5px 12px !important;
+                background: rgba(255,255,255,0.1) !important;
+                border-radius: 12px;
+                flex: 1; /* 내부 박스들이 유연하게 늘어나도록 함 */
+                max-width: fit-content;
+            }
+
+            .power-box-btn {
+                min-width: 75px !important; /* 위 버튼(시뮬레이션 등)과 비슷한 폭 유지 */
+                padding: 6px 12px !important;
+                font-size: 1.05em !important;
+            }
+
+            /* 로고 크기 미세 조정 */
+            .logo-area h2 { font-size: 1.3em !important; }
+        }
 
         /* [프리미엄 설계] 전용 레이아웃 */
         .premium-content { display: flex; gap: 25px; align-items: stretch; justify-content: center; height: 100%; }
@@ -363,6 +518,61 @@
         #panel-control .ctrl-btn { padding: 18px 35px; border: none; border-radius: 40px; cursor: pointer; font-weight: 800; transition: 0.3s; background: #e9ecef; font-size: 16px; }
         #panel-control .ctrl-btn.active { background: #1a2a3a; color: white; transform: translateY(-5px); box-shadow: 0 8px 15px rgba(0,0,0,0.2); }
 
+        /* [아이패드/태블릿용 헤더 최적화] */
+        @media screen and (max-width: 1250px) {
+            header {
+                padding: 10px 15px !important; /* 양옆 여백 축소 */
+            }
+            
+            .logo-area h2 {
+                font-size: 1.2em !important; /* 제목 크기 축소 */
+            }
+
+            .top-controls {
+                gap: 8px !important; /* 버튼 사이 간격 축소 */
+            }
+
+            .btn-ui {
+                padding: 8px 12px !important; /* 버튼 크기 축소 */
+                font-size: 0.85em !important;
+            }
+
+            .control-group {
+                padding: 5px 10px !important; /* 대상/도수 선택창 크기 축소 */
+            }
+            
+            .power-box-btn {
+                min-width: 60px !important; /* 도수 버튼 폭 축소 */
+                padding: 5px 10px !important;
+            }
+        }
+
+        /* 상단 컨트롤 기본 설정 */
+        .top-controls {
+            display: flex;
+            flex-wrap: wrap; /* 내용이 많으면 다음 줄로 넘어가게 설정 */
+            justify-content: flex-end;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* [아이패드 및 좁은 화면용] */
+        @media screen and (max-width: 1250px) {
+            .action-row {
+                width: 100%; /* 한 줄을 다 차지해서 선택창들을 아래로 밀어냄 */
+                display: flex;
+                justify-content: flex-end; /* 오른쪽 정렬 */
+                gap: 8px;
+                margin-bottom: 5px; /* 아래 줄과의 간격 */
+            }
+
+            /* 아래 줄 항목들의 정렬 */
+            .top-controls > .control-group, 
+            .top-controls > .btn-admin-gear {
+                display: flex;
+            }
+        }
+
     </style>
 </head>
 <body class="filter-off">
@@ -370,40 +580,38 @@
 <div class="app-container">
     <header>
         <div class="logo-area"><h2>아이젠트리 충남도청점</h2><span style="font-size:0.8em; opacity:0.7; margin-left:10px;">V1.1 MASTER</span></div>
-        <div class="top-controls">
-            <div class="sim-dropdown-container" style="position: relative; display: inline-block;">
-                <div class="sim-dropdown-container" style="position: relative; display: inline-block;">
-                <button id="sim-main-btn" class="btn-ui" style="background:#8e44ad; font-weight:bold;" onclick="toggleSimDropdown()">🎮 시뮬레이션</button>
-    
-                <div id="sim-menu-list" style="display:none; position:absolute; top:50px; left:0; background:white; min-width:240px; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.3); z-index:10001; border:1px solid #ddd; overflow:hidden;">
-                        <div class="sim-menu-item" onclick="openSimulator('refractive')" style="padding:15px; cursor:pointer; border-bottom:1px solid #eee; color:#1a2a3a; font-weight:bold; text-align:left;">🔍 굴절 이상 (근시/원시/난시)</div>
-                        <div class="sim-menu-item" style="padding:15px; color:#aaa; text-align:left; font-size:0.9em; background:#f9f9f9;">➕ 기능 업데이트 예정...</div>
+            <div class="top-controls">
+                <div class="action-row">
+                    <button id="sim-main-btn" class="btn-ui" style="background:#8e44ad; font-weight:bold;" onclick="toggleSimDropdown()">🎮 시뮬레이션</button>
+                    <button id="filter-toggle-btn" class="btn-ui" style="background:#95a5a6;" onclick="togglePowerFilter()">🔍 필터 OFF</button>
+                    <button class="btn-ui" style="background:#e67e22; margin-left:5px;" onclick="resetAllFilters()">🔄 </button>
+                </div>
+
+                <div class="selection-container">
+                    <div class="inputs-row">
+                        <div class="control-group">
+                            <div onclick="openGeneralPicker('age')"><div class="label-text">대상 선택</div><div id="disp-age" class="power-box-btn">나이</div></div>
+                            <div onclick="openGeneralPicker('issue')"><div class="label-text">불편함 선택</div><div id="disp-issue" class="power-box-btn">없음</div></div>
+                        </div>
+                        <div class="control-group">
+                            <div onclick="openPowerPicker('s')">
+                                <div class="label-text">S (구면)</div>
+                                <div id="disp-s" class="power-box-btn">0.00</div>
+                            </div>
+                            <div onclick="openPowerPicker('c')">
+                                <div class="label-text">C (난시)</div>
+                                <div id="disp-c" class="power-box-btn">0.00</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="icons-row">
+                        <button class="btn-admin-gear" onclick="secureAdminOpen()">⚙️</button>
+                        <button id="fullscreen-btn" class="btn-admin-gear" 
+                            style="margin-left: 5px; border-radius: 50% !important; background: rgba(255,255,255,0.1);" 
+                            onclick="toggleFullScreen()">📺</button>
                     </div>
                 </div>
-                
-                <div id="sim-menu-list" style="display:none; position:absolute; top:50px; left:0; background:white; min-width:240px; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.3); z-index:10001; border:1px solid #ddd; overflow:hidden;">
-                    <div class="sim-menu-item" onclick="openSimulator('refractive')" style="padding:15px; cursor:pointer; border-bottom:1px solid #eee; color:#1a2a3a; font-weight:bold; text-align:left;">🔍 굴절 이상 (근시/원시/난시)</div>
-                    <div class="sim-menu-item" style="padding:15px; color:#aaa; text-align:left; font-size:0.9em; background:#f9f9f9;">➕ 기능 업데이트 예정...</div>
-                </div>
             </div>
-            <button id="filter-toggle-btn" class="btn-ui" style="background:#95a5a6;" onclick="togglePowerFilter()">🔍 도수 적용 안함</button>
-            <button class="btn-ui" style="background:#e67e22; margin-left:5px;" onclick="resetAllFilters()">🔄 전체 초기화</button>
-            <div class="control-group">
-                <div onclick="openGeneralPicker('age')"><div class="label-text">대상 선택</div><div id="disp-age" class="power-box-btn">나이</div></div>
-                <div onclick="openGeneralPicker('issue')"><div class="label-text">불편함 선택</div><div id="disp-issue" class="power-box-btn">없음</div></div>
-            </div>
-            <div class="control-group">
-                <div onclick="openPowerPicker('rs')"><div class="label-text">우 S</div><div id="disp-rs" class="power-box-btn">0.00</div></div>
-                <div onclick="openPowerPicker('rc')"><div class="label-text">우 C</div><div id="disp-rc" class="power-box-btn">0.00</div></div>
-                <div onclick="openPowerPicker('ls')"><div class="label-text">좌 S</div><div id="disp-ls" class="power-box-btn">0.00</div></div>
-                <div onclick="openPowerPicker('lc')"><div class="label-text">좌 C</div><div id="disp-lc" class="power-box-btn">0.00</div></div>
-            </div>
-            <button class="btn-admin-gear" onclick="secureAdminOpen()">⚙️</button>
-            <button id="fullscreen-btn" class="btn-admin-gear" 
-                style="margin-left: 5px; border-radius: 50% !important; background: rgba(255,255,255,0.1);" 
-                onclick="toggleFullScreen()">📺
-            </button>
-        </div>
     </header>
 
     <div id="ui-overlay" onclick="closeAllModals()" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:1998;"></div>
@@ -423,9 +631,9 @@
 <div id="sim-modal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); width:1200px; height:900px; background:white; z-index:9500; border-radius:25px; box-shadow:0 0 100px rgba(0,0,0,0.6); overflow:hidden; flex-direction:column;">
     <div style="background:#f8f9fa; display:flex; border-bottom:1px solid #ddd; height: 80px; align-items: stretch; padding-left: 20px;">
         <div class="sim-tab active" onclick="switchSimTab('refractive')">🔍 굴절 이상 교정</div>
-        <div class="sim-tab" onclick="switchSimTab('premium')">💎 프리미엄 설계 비교</div>
         <div class="sim-tab" onclick="switchSimTab('myopia')">📉 성장기 근시 진행</div>
         <div class="sim-tab" onclick="switchSimTab('control')">🛡️ 근시 억제 원리</div>
+        <div class="sim-tab" onclick="switchSimTab('premium')">💎 프리미엄 설계 비교</div>
         <div style="flex:1;"></div>
         <button class="sim-close-touch-btn" onclick="closeSimulator()">닫기 ×</button>
     </div>
@@ -448,7 +656,13 @@
                 <button class="btn-base" id="btn-myopia" onclick="setSimBase('myopia')">근시</button>
                 <button class="btn-base" id="btn-hyperopia" onclick="setSimBase('hyperopia')">원시</button>
                 <button class="btn-base" id="btn-astig" onclick="setSimBase('astigmatism')">난시</button>
-                <button class="btn-astig-add" id="btn-astig-toggle" onclick="toggleSimAstigmatism()">➕ 난시 추가</button>
+                <button class="btn-astig-add" id="btn-astig-toggle" onclick="toggleSimAstigmatism()">
+                    <span class="plus-icon">+</span>
+                    <div class="text-group">
+                        <span>난시</span>
+                        <span>추가</span>
+                    </div>
+                </button>
             </div>
             <div style="text-align:center; margin:30px 0;">
                 <button class="btn-lens" id="btn-lens-toggle" onclick="toggleSimLens()" style="width: 500px; height: 70px; font-size: 1.3em;">✨ 안경 렌즈 교정 시뮬레이션 작동</button>
@@ -760,22 +974,18 @@
 
     // 3. [예] 버튼 클릭 시 실제 초기화 작업
     function executeReset() {
-        selectedAge = 'none'; // 'adult' 대신 'none'
+        selectedAge = 'none';
         selectedIssue = 'none';
         userPower = {rs:0, rc:0, ls:0, lc:0};
         
-        // 상단 버튼 글자들 초기화
-        document.getElementById('disp-age').innerText = "나이"; // "성인" 대신 "나이"
+        document.getElementById('disp-age').innerText = "나이";
         document.getElementById('disp-issue').innerText = "없음";
-        document.getElementById('disp-rs').innerText = "0.00";
-        document.getElementById('disp-rc').innerText = "0.00";
-        document.getElementById('disp-ls').innerText = "0.00";
-        document.getElementById('disp-lc').innerText = "0.00";
-
-        // 메인 화면 다시 그리기 (AI 추천 등 업데이트)
-        renderApp();
         
-        // 창 닫기
+        // 이 두 줄을 새 ID에 맞게 수정하세요
+        document.getElementById('disp-s').innerText = "0.00";
+        document.getElementById('disp-c').innerText = "0.00";
+
+        renderApp();
         closeResetModal();
     }
 
@@ -1162,16 +1372,43 @@
         const overlay = document.getElementById('picker-overlay');
         const grid = document.getElementById('picker-grid-content');
         const title = document.getElementById('picker-title');
-        overlay.style.display = 'flex'; grid.innerHTML = '';
+        overlay.style.display = 'flex'; 
+        grid.innerHTML = '';
+        
         let min, max;
-        if(type.includes('s')) { title.innerText = "구면 도수(SPH) 선택 (+8.00 ~ -15.00)"; min = -15; max = 8; }
-        else { title.innerText = "난시 도수(CYL) 선택 (0.00 ~ -7.00)"; min = -7; max = 0; }
+        // 's'는 구면, 'c'는 난시
+        if(type === 's') { 
+            title.innerText = "구면 도수(SPH) 선택 (+8.00 ~ -15.00)"; 
+            min = -15; max = 8; 
+        } else { 
+            title.innerText = "난시 도수(CYL) 선택 (0.00 ~ -7.00)"; 
+            min = -7; max = 0; 
+        }
+        
+        // 현재 값 확인 (rs 기준으로 체크)
+        const currentVal = (type === 's') ? userPower.rs : userPower.rc;
+
         for(let i = max; i >= min; i -= 0.25) {
             const val = i.toFixed(2);
             const btn = document.createElement('div');
-            btn.className = `pick-btn ${i > 0 ? 'plus' : (i < 0 ? 'minus' : '')} ${userPower[type].toFixed(2) === val ? 'selected' : ''}`;
+            btn.className = `pick-btn ${i > 0 ? 'plus' : (i < 0 ? 'minus' : '')} ${currentVal.toFixed(2) === val ? 'selected' : ''}`;
             btn.innerText = (i > 0 ? "+" : "") + val;
-            btn.onclick = () => { userPower[type] = parseFloat(val); document.getElementById('disp-'+type).innerText = (i>0?"+":"")+val; overlay.style.display='none'; renderApp(); };
+            
+            btn.onclick = () => { 
+                const numVal = parseFloat(val);
+                if(type === 's') {
+                    // S 선택 시 우S, 좌S 모두 변경
+                    userPower.rs = numVal; 
+                    userPower.ls = numVal;
+                } else {
+                    // C 선택 시 우C, 좌C 모두 변경
+                    userPower.rc = numVal; 
+                    userPower.lc = numVal;
+                }
+                document.getElementById('disp-'+type).innerText = (i>0?"+":"")+val; 
+                overlay.style.display='none'; 
+                renderApp(); 
+            };
             grid.appendChild(btn);
         }
     }
@@ -1492,7 +1729,7 @@
     /* 3. 시뮬레이터 전용 로직 통합 (스크립트 최하단에 추가) */
 let sBase = 'normal', sAstig = false, sLens = false;
 const sConf = {
-    normal: { x: 850, blur: 0, text: "정시" },
+    normal: { x: 855, blur: 0, text: "정시" },
     myopia: { x: 750, blur: 1.5, text: "근시" },
     hyperopia: { x: 950, blur: 1.5, text: "원시" },
     astigmatism: { x: 850, blur: 2, text: "단순 난시" }
@@ -1536,13 +1773,24 @@ function closeSimulator() {
 }
 
 function setSimBase(state) {
-    sBase = state; sLens = false;
+    sBase = state; 
+    sLens = false;
+    
+    // ★ 추가: 정시를 누르면 난시 추가 상태를 무조건 해제함
+    if (state === 'normal') {
+        sAstig = false;
+    }
+    
     if (state === 'astigmatism') sAstig = false;
     renderSim();
 }
 
 function toggleSimAstigmatism() {
-    sAstig = !sAstig; sLens = false;
+    // ★ 추가: 현재 정시 상태라면 버튼이 눌리지 않게 리턴
+    if (sBase === 'normal') return; 
+
+    sAstig = !sAstig; 
+    sLens = false;
     if (sAstig && sBase === 'astigmatism') sBase = 'normal';
     renderSim();
 }
@@ -1556,21 +1804,91 @@ function toggleSimLens() {
 }
 
 function renderSim() {
-    // ID 매칭 오류 해결 (btn-astigmatism vs btn-astig)
+    // 1. 요소 찾기
+    const astigBtn = document.getElementById('btn-astig-toggle');
+    const target = document.getElementById('target');
+    const rayTop = document.getElementById('ray-top');
+    const rayBottom = document.getElementById('ray-bottom');
+    const lensCont = document.getElementById('lens-container');
+    const lensShape = document.getElementById('lens-shape');
+    const desc = document.getElementById('description');
+
+    // 2. 버튼 UI 상태 제어 (정시일 때 난시버튼 비활성화)
+    if (sBase === 'normal') {
+        astigBtn.classList.add('disabled'); // 흐리게 만들기
+    } else {
+        astigBtn.classList.remove('disabled'); // 다시 선명하게
+    }
+    if (sBase === 'normal' || sBase === 'astigmatism') {
+        astigBtn.classList.add('disabled'); 
+    } else {
+        astigBtn.classList.remove('disabled'); 
+    }
+    // 3. 버튼 활성화(색상) 표시 제어
     document.querySelectorAll('#sim-modal .btn-base').forEach(b => b.classList.remove('active'));
     const activeBtnId = (sBase === 'astigmatism') ? 'btn-astig' : 'btn-' + sBase;
     const activeBtn = document.getElementById(activeBtnId);
     if(activeBtn) activeBtn.classList.add('active');
+    
+    astigBtn.classList.toggle('active', sAstig);
+    document.getElementById('btn-lens-toggle').classList.toggle('active', sLens);
 
-    // ... 광선 및 렌즈 투명도 제어 ...
-    const lensCont = document.getElementById('lens-container');
-    if (sLens) {
-        lensCont.style.opacity = "1"; // 렌즈 나타남
-        // 원시면 볼록(biconvex), 그 외엔 오목(biconcave)
-        document.getElementById('lens-shape').className = (sBase === 'hyperopia') ? "biconvex" : "biconcave";
-    } else {
-        lensCont.style.opacity = "0"; // 렌즈 사라짐
+    // 4. 시각 효과(초점 위치, 흐림, 그림자) 계산
+    const base = sConf[sBase === 'astigmatism' ? 'normal' : sBase];
+    let fX = sLens ? 850 : base.x;
+    let fBlur = sLens ? 0 : base.blur;
+    let shadow = "none";
+
+    // 난시 효과 적용 (3방향 그림자)
+    if ((sAstig || sBase === 'astigmatism') && !sLens) {
+        fBlur += 2;
+        shadow = [
+            "0 0 15px rgba(0,0,0,0.3)",          
+            "30px 5px 4px rgba(0,0,0,0.15)",     
+            "-25px 12px 5px rgba(0,0,0,0.12)",   
+            "5px -22px 6px rgba(0,0,0,0.1)"      
+        ].join(", ");
     }
+
+    // 5. 진단 텍스트 작성
+    let name = (sBase === 'astigmatism') ? "단순 난시" : base.text;
+    if (sAstig && sBase !== 'astigmatism' && sBase !== 'normal') name += "성 난시";
+    else if (sAstig && sBase === 'normal') name = "단순 난시";
+
+    desc.innerHTML = `<b>상태:</b> ${name}<br>` + (sLens ? 
+        "<span style='color:#27ae60;'><b>[교정]</b> 아이젠트리의 정밀 검안 렌즈로 초점을 망막에 맺히게 했습니다.</span>" : 
+        "초점이 정확하지 않아 시야가 흐려 보입니다.");
+
+    // 6. 실제 화면(DOM)에 적용
+    target.style.left = (fX - 22) + "px";
+    target.style.top = "160px"; 
+    target.style.filter = `blur(${fBlur}px)`;
+    target.style.textShadow = shadow;
+    target.style.transform = "rotate(180deg)";
+
+    rayTop.setAttribute("points", `115,150 500,150 ${fX},210`);
+    rayBottom.setAttribute("points", `115,230 500,230 ${fX},170`);
+
+    // 렌즈 나타나기/사라지기
+    if (sLens) {
+        lensCont.style.opacity = "1";
+        lensShape.className = (sBase === 'hyperopia') ? "biconvex" : "biconcave";
+        lensCont.style.zIndex = "10";
+    } else {
+        lensCont.style.opacity = "0";
+    }
+}
+
+function setSimBase(state) {
+    sBase = state; 
+    sLens = false;
+    
+    // ★ 수정: 정시(normal) 혹은 난시(astigmatism)를 누르면 난시 추가 상태를 무조건 해제함
+    if (state === 'normal' || state === 'astigmatism') {
+        sAstig = false;
+    }
+    
+    renderSim();
 }
 
 function updatePremiumSim() {
@@ -1661,60 +1979,6 @@ function updateMyopiaMode(modeKey) {
     document.getElementById('myo-status-tag').innerText = data.status;
     document.getElementById('myo-status-tag').style.background = data.color;
     document.getElementById('myo-description').innerHTML = data.desc;
-}
-
-function renderSim() {
-    // 기존 버튼 클래스 제어
-    document.querySelectorAll('#sim-modal .btn-base').forEach(b => b.classList.remove('active'));
-    document.getElementById(sBase === 'astigmatism' ? 'btn-astig' : 'btn-' + sBase).classList.add('active');
-    document.getElementById('btn-astig-toggle').classList.toggle('active', sAstig);
-    document.getElementById('btn-lens-toggle').classList.toggle('active', sLens);
-
-    const target = document.getElementById('target');
-    const rayTop = document.getElementById('ray-top');
-    const rayBottom = document.getElementById('ray-bottom');
-    const lensCont = document.getElementById('lens-container');
-    const lensShape = document.getElementById('lens-shape');
-    const desc = document.getElementById('description');
-
-    const base = sConf[sBase === 'astigmatism' ? 'normal' : sBase];
-    let fX = sLens ? 850 : base.x;
-    let fBlur = sLens ? 0 : base.blur;
-    let shadow = "none";
-
-    if ((sAstig || sBase === 'astigmatism') && !sLens) {
-        fBlur += 2; shadow = "0 0 12px rgba(0,0,0,0.2), 30px 5px 4px rgba(0,0,0,0.15)";
-    }
-
-    // 진단 텍스트 로직
-    let name = (sBase === 'astigmatism') ? "단순 난시" : base.text;
-    if (sAstig && sBase !== 'astigmatism' && sBase !== 'normal') name += "성 난시";
-    else if (sAstig && sBase === 'normal') name = "단순 난시";
-
-    desc.innerHTML = `<b>상태:</b> ${name}<br>` + (sLens ? 
-        "<span style='color:#27ae60;'><b>[교정]</b> 아이젠트리의 정밀 검안 렌즈로 초점을 망막에 맺히게 했습니다.</span>" : 
-        "초점이 정확하지 않아 시야가 흐려 보입니다.");
-
-    target.style.left = (fX - 22) + "px";
-    target.style.top = "160px"; // ★ 이 숫자를 키울수록 나무가 아래로 내려갑니다 (굴절 이상 시뮬레이터 오른쪽 나무 상하 위치)
-    target.style.filter = `blur(${fBlur}px)`;
-    target.style.textShadow = shadow;
-    target.style.transform = "rotate(180deg)";
-    target.style.textShadow = shadow;
-    target.style.transform = "rotate(180deg)";
-
-    rayTop.setAttribute("points", `115,150 500,150 ${fX},210`); //굴절 이상 광선1 조정
-    rayBottom.setAttribute("points", `115,230 500,230 ${fX},170`); //굴절 이상 광선2 조정
-
-    lensCont.style.opacity = sLens ? "1" : "0";
-    if (sLens) {
-    lensCont.style.opacity = "1";
-    // 원시일 때는 볼록렌즈(biconvex), 그 외(근시/난시)는 오목렌즈(biconcave) 부여
-    lensShape.className = (sBase === 'hyperopia') ? "biconvex" : "biconcave";
-    lensCont.style.zIndex = "10"; // 다른 요소보다 위에 보이도록 보장
-    } else {
-        lensCont.style.opacity = "0";
-    }
 }
 
 /* [근시 억제] 시뮬레이션 데이터 */
