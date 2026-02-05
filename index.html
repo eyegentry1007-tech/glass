@@ -174,51 +174,48 @@
             top: 50%;
             left: 50%;
             z-index: 9500;
-            width: 1200px;
-            height: 850px; /* 세로 높이를 살짝 줄여 안정감 확보 */
-            max-width: 95vw;
-            max-height: 95vh;
+            width: 1200px; !important;
+            height: 900px; !important;
+
             background: white;
             border-radius: 25px;
+            box-shadow: 0 0 100px rgba(0,0,0,0.6);
+            overflow: hidden;
+            flex-direction: column;
+
+            /* 2. 중앙 정렬 상태에서 배율(scale)만 조절하도록 설정 */
             transform: translate(-50%, -50%) scale(1);
-            transform-origin: center center;
+            transform-origin: center center; /* 정중앙 기준 축소 */
             transition: transform 0.2s ease-out;
         }
 
-        /* [아이패드 및 태블릿 상하좌우 완벽 대응 스케일링] */
-
-        /* 1. 화면이 1300px보다 좁거나, 높이가 950px보다 낮을 때 (일반 노트북/아이패드 대형) */
         @media screen and (max-width: 1300px), screen and (max-height: 950px) {
-            #sim-modal {
-                transform: translate(-50%, -50%) scale(0.85) !important;
-            }
+            #sim-modal { transform: translate(-50%, -50%) scale(0.85); }
         }
 
-        /* 2. 화면이 1100px보다 좁거나, 높이가 850px보다 낮을 때 (아이패드 10세대/에어 가로) */
+        /* 아이패드 10세대/에어 가로 (75% 축소) - 가장 추천 */
         @media screen and (max-width: 1100px), screen and (max-height: 850px) {
-            #sim-modal {
-                transform: translate(-50%, -50%) scale(0.75) !important;
-            }
+            #sim-modal { transform: translate(-50%, -50%) scale(0.72); }
         }
 
-        /* 3. 화면이 900px보다 좁거나, 높이가 750px보다 낮을 때 (아이패드 미니/태블릿 세로) */
+        /* 아이패드 미니 및 태블릿 세로 (60% 축소) */
         @media screen and (max-width: 900px), screen and (max-height: 750px) {
-            #sim-modal {
-                transform: translate(-50%, -50%) scale(0.65) !important;
-            }
+            #sim-modal { transform: translate(-50%, -50%) scale(0.62); }
         }
 
-        /* 4. 화면이 아주 낮거나 좁을 때 (모바일/작은 화면) */
-        @media screen and (max-width: 768px), screen and (max-height: 600px) {
-            #sim-modal {
-                transform: translate(-50%, -50%) scale(0.55) !important;
-            }
+        /* 모바일 및 극단적으로 작은 화면 (50% 축소) */
+        @media screen and (max-width: 700px), screen and (max-height: 600px) {
+            #sim-modal { transform: translate(-50%, -50%) scale(0.5); }
         }
 
+        /* 3. 내부 뷰포트 높이 원상 복구 (광선/나무 좌표 일치를 위해 필수) */
         #sim-modal .viewport { 
-            position: relative; width: 100%; height: 380px; /* 550에서 380으로 축소 */
-            background: #fff; border-radius: 15px; border: 1px solid #eee; margin: 15px 0; overflow: hidden; 
+            height: 380px !important; 
+            margin: 15px 0 !important;
+            position: relative;
+            overflow: hidden;
         }
+
         #sim-modal .eye-bg { position: absolute; top: 50%; left: 70%; transform: translate(-50%, -50%); width: 550px; z-index: 1; } /* 눈 크기 700에서 550으로 축소 */
         .biconcave { 
             width: 40px; 
@@ -387,15 +384,6 @@
             align-items: center;
             gap: 10px;
         }
-
-        /* [아이패드 및 좁은 화면: 2단 정렬 최적화] */
-        @media screen and (max-width: 1450px) {
-            .top-controls {
-                flex-direction: column !important; /* 세로 2단으로 쌓기 */
-                align-items: flex-start !important; /* ★ 핵심: 두 줄의 왼쪽 끝 라인을 맞춤 */
-                gap: 12px !important;
-                margin-left: 20px; /* 로고와의 최소 간격 확보 */
-            }
 
             /* 상단 버튼줄과 하단 선택창줄의 정렬 통일 */
             .action-row, .selection-container {
@@ -1816,17 +1804,12 @@ function renderSim() {
     const lensShape = document.getElementById('lens-shape');
     const desc = document.getElementById('description');
 
-    // 2. 버튼 UI 상태 제어 (정시일 때 난시버튼 비활성화)
-    if (sBase === 'normal') {
-        astigBtn.classList.add('disabled'); // 흐리게 만들기
-    } else {
-        astigBtn.classList.remove('disabled'); // 다시 선명하게
-    }
     if (sBase === 'normal' || sBase === 'astigmatism') {
         astigBtn.classList.add('disabled'); 
     } else {
         astigBtn.classList.remove('disabled'); 
     }
+
     // 3. 버튼 활성화(색상) 표시 제어
     document.querySelectorAll('#sim-modal .btn-base').forEach(b => b.classList.remove('active'));
     const activeBtnId = (sBase === 'astigmatism') ? 'btn-astig' : 'btn-' + sBase;
@@ -2062,7 +2045,7 @@ function switchSimTab(tabId) {
         setTimeout(updatePremiumSim, 150); // 창이 뜨는 시간을 고려해 0.15초 뒤에 실행
     }
     else if(tabId === 'myopia') {
-        updateMyopiaMode('infant'); // 탭 열 때 유아기(정시)를 기본으로 보여줌
+        updateMyopiaMode('baby'); // 탭 열 때 유아기(정시)를 기본으로 보여줌
     }
     else if(tabId === 'control') {
         setTimeout(() => updateCtrlMode('normal'), 100); // 탭 열 때 일반 안경 모드 기본값
